@@ -1,9 +1,17 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+} from "react-router-dom";
 
 import StudentLayout from "./layouts/StudentLayout.jsx";
 import StudentDashboard from "./pages/StudentDashboard.jsx";
+import StudentProfile from "./pages/StudentProfile.jsx";
 import Login from "./pages/Login.jsx";
 import Signup from "./pages/Signup.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+
 
 function PlaceholderPage({ title }) {
   return (
@@ -16,73 +24,93 @@ function PlaceholderPage({ title }) {
   );
 }
 
+
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Redirect the home page to the student dashboard */}
         <Route
           path="/"
-          element={<Navigate to="/student/dashboard" replace />}
+          element={
+            <Navigate
+              to="/student/dashboard"
+              replace
+            />
+          }
         />
 
-        {/* Public authentication pages */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route
+          path="/login"
+          element={<Login />}
+        />
 
-        {/* Student application pages */}
-        <Route path="/student" element={<StudentLayout />}>
-          <Route path="dashboard" element={<StudentDashboard />} />
+        <Route
+          path="/signup"
+          element={<Signup />}
+        />
 
+        <Route element={<ProtectedRoute />}>
           <Route
-            path="profile"
-            element={<PlaceholderPage title="My Profile" />}
-          />
+            path="/student"
+            element={<StudentLayout />}
+          >
+            <Route
+              path="dashboard"
+              element={<StudentDashboard />}
+            />
 
-          <Route
-            path="jobs"
-            element={<PlaceholderPage title="Find Jobs" />}
-          />
+            <Route
+              path="profile"
+              element={<StudentProfile />}
+            />
 
-          <Route
-            path="jobs/:jobId"
-            element={<PlaceholderPage title="Job Details" />}
-          />
+            <Route
+              path="jobs"
+              element={
+                <PlaceholderPage title="Find Jobs" />
+              }
+            />
 
-          <Route
-            path="applications"
-            element={<PlaceholderPage title="My Applications" />}
-          />
+            <Route
+              path="applications"
+              element={
+                <PlaceholderPage title="My Applications" />
+              }
+            />
 
-          <Route
-            path="events"
-            element={<PlaceholderPage title="Find Events" />}
-          />
+            <Route
+              path="events"
+              element={
+                <PlaceholderPage title="Find Events" />
+              }
+            />
 
-          <Route
-            path="events/registered"
-            element={<PlaceholderPage title="Registered Events" />}
-          />
+            <Route
+              path="students"
+              element={
+                <PlaceholderPage title="Browse Students" />
+              }
+            />
 
-          <Route
-            path="students"
-            element={<PlaceholderPage title="Browse Students" />}
-          />
-
-          <Route
-            path="assistant"
-            element={<PlaceholderPage title="AI Assistant" />}
-          />
+            <Route
+              path="assistant"
+              element={
+                <PlaceholderPage title="AI Assistant" />
+              }
+            />
+          </Route>
         </Route>
 
-        {/* Page shown for unknown URLs */}
         <Route
           path="*"
-          element={<PlaceholderPage title="Page Not Found" />}
+          element={
+            <PlaceholderPage title="Page Not Found" />
+          }
         />
       </Routes>
     </BrowserRouter>
   );
 }
+
 
 export default App;

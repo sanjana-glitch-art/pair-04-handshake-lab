@@ -3,7 +3,8 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 from .auth_routes import router as auth_router
 from .database import get_db
-
+from fastapi.middleware.cors import CORSMiddleware
+from .student_routes import router as student_router
 
 app = FastAPI(
     title="Pair 4 Handshake API",
@@ -12,6 +13,18 @@ app = FastAPI(
 )
 
 app.include_router(auth_router)
+app.include_router(student_router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def root():
