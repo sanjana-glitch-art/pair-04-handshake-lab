@@ -10,53 +10,97 @@ function Navbar() {
     navigate("/login");
   }
 
+  function getNavClass({ isActive }) {
+    return isActive
+      ? "sidebar-link active"
+      : "sidebar-link";
+  }
+
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
-      <div className="container">
+    <aside className="student-sidebar">
+      <NavLink
+        to="/student/dashboard"
+        className="sidebar-logo"
+      >
+        H
+      </NavLink>
+
+      <nav className="sidebar-navigation">
         <NavLink
-          className="navbar-brand fw-bold"
           to="/student/dashboard"
+          className={getNavClass}
         >
-          Handshake
+          <span className="sidebar-icon">⌂</span>
+          Home
         </NavLink>
 
-        <div className="navbar-nav ms-auto">
-          <NavLink className="nav-link" to="/student/dashboard">
-            Dashboard
-          </NavLink>
+        <NavLink
+          to="/student/jobs"
+          className={getNavClass}
+        >
+          <span className="sidebar-icon">▣</span>
+          Jobs
+        </NavLink>
 
-          <NavLink className="nav-link" to="/student/profile">
-            Profile
-          </NavLink>
+        <NavLink
+          to="/student/profile"
+          className={getNavClass}
+        >
+          <span className="sidebar-icon">♙</span>
+          Profile
+        </NavLink>
 
-          <NavLink className="nav-link" to="/student/jobs">
-            Jobs
-          </NavLink>
+        <NavLink
+          to="/student/applications"
+          className={getNavClass}
+        >
+          <span className="sidebar-icon">▤</span>
+          Applications
+        </NavLink>
 
-          <NavLink
-            className="nav-link"
-            to="/student/applications"
-          >
-            Applications
-          </NavLink>
+        <NavLink
+          to="/student/events"
+          className={getNavClass}
+        >
+          <span className="sidebar-icon">□</span>
+          Events
+        </NavLink>
 
-          <NavLink className="nav-link" to="/student/events">
-            Events
-          </NavLink>
+        <NavLink
+          to="/student/registered-events"
+          className={getNavClass}
+        >
+          <span className="sidebar-icon">✓</span>
+          Registered Events
+        </NavLink>
 
-          <NavLink className="nav-link" to="/student/assistant">
-            Assistant
-          </NavLink>
+        <NavLink
+          to="/student/preferences"
+          className={getNavClass}
+        >
+          <span className="sidebar-icon">⚙</span>
+          Preferences
+        </NavLink>
 
-          <button
-            className="btn btn-outline-light btn-sm ms-3"
-            onClick={handleLogout}
-          >
-            Logout
-          </button>
-        </div>
+        <NavLink
+          to="/student/assistant"
+          className={getNavClass}
+        >
+          <span className="sidebar-icon">✦</span>
+          AI Assistant
+        </NavLink>
+      </nav>
+
+      <div className="sidebar-bottom">
+        <button
+          className="sidebar-logout"
+          type="button"
+          onClick={handleLogout}
+        >
+          Log out
+        </button>
       </div>
-    </nav>
+    </aside>
   );
 }
 

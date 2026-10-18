@@ -5,6 +5,15 @@ from .auth_routes import router as auth_router
 from .database import get_db
 from fastapi.middleware.cors import CORSMiddleware
 from .student_routes import router as student_router
+from .job_routes import router as job_router
+from .application_routes import router as application_router
+from .event_routes import router as event_router
+from .preference_routes import router as preference_router
+from .assistant_routes import router as assistant_router
+from .employer_routes import router as employer_router
+from .employer_event_routes import router as employer_event_router
+from .employer_application_routes import router as employer_application_router
+from .employer_profile_routes import router as employer_profile_router
 
 app = FastAPI(
     title="Pair 4 Handshake API",
@@ -14,6 +23,15 @@ app = FastAPI(
 
 app.include_router(auth_router)
 app.include_router(student_router)
+app.include_router(job_router)
+app.include_router(application_router)
+app.include_router(event_router)
+app.include_router(preference_router)
+app.include_router(assistant_router)
+app.include_router(employer_router)
+app.include_router(employer_event_router)
+app.include_router(employer_application_router)
+app.include_router(employer_profile_router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -58,3 +76,4 @@ def database_health_check(db: Session = Depends(get_db)):
             status_code=503,
             detail="Database connection failed",
         )
+

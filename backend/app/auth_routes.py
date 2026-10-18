@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from .database import get_db
-from .models import StudentProfile, User
+from .models import CompanyProfile, StudentProfile, User
 from .schemas import (
+    CompanySignupRequest,
     LoginRequest,
     SignupRequest,
     TokenResponse,
@@ -27,12 +28,12 @@ router = APIRouter(
     response_model=UserResponse,
     status_code=status.HTTP_201_CREATED,
 )
-def signup(
+def student_signup(
     request: SignupRequest,
     db: Session = Depends(get_db),
 ):
     """
-    Creates a new student account and student profile.
+    Creates a student account and student profile.
     """
 
     normalized_email = request.email.lower()
@@ -72,6 +73,58 @@ def signup(
 
 
 @router.post(
+    "/company/signup",
+    response_model=UserResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def company_signup(
+    request: CompanySignupRequest,
+    db: Session = Depends(get_db),
+):
+    """
+    Creates a company account and company profile.
+    """
+
+    normalized_email = request.email.lower()
+
+    existing_user = (
+        db.query(User)
+        .filter(User.email == normalized_email)
+        .first()
+    )
+
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="An account with this email already exists.",
+        )
+
+    new_user = User(
+        email=normalized_email,
+        password_hash=hash_password(request.password),
+        user_role="company",
+    )
+
+    db.add(new_user)
+    db.flush()
+
+    new_company_profile = CompanyProfile(
+        user_id=new_user.id,
+        company_name=request.company_name,
+        location=request.location,
+        description=request.description,
+        contact_email=request.contact_email,
+        contact_phone=request.contact_phone,
+    )
+
+    db.add(new_company_profile)
+    db.commit()
+    db.refresh(new_user)
+
+    return new_user
+
+
+@router.post(
     "/login",
     response_model=TokenResponse,
 )
@@ -80,7 +133,8 @@ def login(
     db: Session = Depends(get_db),
 ):
     """
-    Verifies student credentials and returns a JWT token.
+    Logs in either a student or a company.
+    The JWT contains the user's role.
     """
 
     normalized_email = request.email.lower()

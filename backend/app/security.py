@@ -109,3 +109,34 @@ def get_current_user(
         raise credentials_exception
 
     return user
+
+def require_student(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    """
+    Allows only student users to access a route.
+    """
+
+    if current_user.user_role != "student":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Student access is required.",
+        )
+
+    return current_user
+
+
+def require_company(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    """
+    Allows only company users to access a route.
+    """
+
+    if current_user.user_role != "company":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Company access is required.",
+        )
+
+    return current_user
