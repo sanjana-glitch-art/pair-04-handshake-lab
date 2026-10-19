@@ -6,6 +6,7 @@ function Applications() {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
 
   useEffect(() => {
     async function loadApplications() {
@@ -13,7 +14,7 @@ function Applications() {
         setLoading(true);
         setError("");
 
-        const data = await getMyApplications();
+        const data = await getMyApplications(statusFilter);
 
         setApplications(Array.isArray(data) ? data : []);
       } catch (err) {
@@ -26,7 +27,7 @@ function Applications() {
     }
 
     loadApplications();
-  }, []);
+  }, [statusFilter]);
 
   function formatDate(dateValue) {
     if (!dateValue) {
@@ -62,6 +63,21 @@ function Applications() {
         </p>
       </div>
 
+      <div className="btn-group mb-4" role="group" aria-label="Filter by status">
+        {["", "Pending", "Reviewed", "Declined"].map((status) => (
+          <button
+            key={status || "all"}
+            type="button"
+            className={`btn btn-sm ${
+              statusFilter === status ? "btn-dark" : "btn-outline-dark"
+            }`}
+            onClick={() => setStatusFilter(status)}
+          >
+            {status || "All"}
+          </button>
+        ))}
+      </div>
+
       {loading && <p>Loading your applications...</p>}
 
       {error && (
@@ -72,7 +88,9 @@ function Applications() {
 
       {!loading && !error && applications.length === 0 && (
         <div className="alert alert-info">
-          You have not submitted any applications yet.
+          {statusFilter
+            ? `No ${statusFilter.toLowerCase()} applications.`
+            : "You have not submitted any applications yet."}
         </div>
       )}
 

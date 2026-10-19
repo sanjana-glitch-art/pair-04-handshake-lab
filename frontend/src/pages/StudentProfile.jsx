@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import {
   getMyProfile,
   updateMyProfile,
+  uploadMyProfilePicture,
+  uploadUrl,
 } from "../services/api.js";
 
 
@@ -24,6 +26,14 @@ const emptyProfile = {
 };
 
 
+// Only fields the update endpoint accepts go back into the form.
+function pickEditable(data) {
+  return Object.fromEntries(
+    Object.keys(emptyProfile).map((key) => [key, data[key] ?? ""])
+  );
+}
+
+
 function StudentProfile() {
   const [profile, setProfile] = useState(emptyProfile);
 
@@ -32,6 +42,11 @@ function StudentProfile() {
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
+  // Skills are edited as one comma-separated line.
+  const [skillsText, setSkillsText] = useState("");
+  const [picturePath, setPicturePath] = useState("");
+  const [uploading, setUploading] = useState(false);
 
 
   useEffect(() => {
@@ -48,12 +63,14 @@ function StudentProfile() {
 
         setProfile({
           ...emptyProfile,
-          ...safeData,
+          ...pickEditable(safeData),
 
           date_of_birth: safeData.date_of_birth || "",
           graduation_year: safeData.graduation_year || "",
           cgpa: safeData.cgpa || "",
         });
+        setSkillsText((safeData.skills || []).join(", "));
+        setPicturePath(safeData.profile_picture_path || "");
       } catch (err) {
         setError(err.message);
       } finally {
@@ -98,6 +115,11 @@ function StudentProfile() {
           profile.cgpa
             ? Number(profile.cgpa)
             : null,
+
+        skills: skillsText
+          .split(",")
+          .map((skill) => skill.trim())
+          .filter(Boolean),
       };
 
       const updatedProfile =
@@ -108,7 +130,7 @@ function StudentProfile() {
 
       setProfile({
         ...emptyProfile,
-        ...safeUpdatedProfile,
+        ...pickEditable(safeUpdatedProfile),
 
         date_of_birth:
           safeUpdatedProfile.date_of_birth || "",
@@ -120,6 +142,7 @@ function StudentProfile() {
           safeUpdatedProfile.cgpa || "",
       });
 
+      setSkillsText((safeUpdatedProfile.skills || []).join(", "));
       setMessage(
         "Profile updated successfully."
       );
@@ -127,6 +150,30 @@ function StudentProfile() {
       setError(err.message);
     } finally {
       setSaving(false);
+    }
+  }
+
+
+  async function handlePictureChange(event) {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    setUploading(true);
+    setMessage("");
+    setError("");
+
+    try {
+      const updated = await uploadMyProfilePicture(file);
+      setPicturePath(updated.profile_picture_path || "");
+      setMessage("Profile picture updated.");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setUploading(false);
+      event.target.value = "";
     }
   }
 
@@ -166,6 +213,40 @@ function StudentProfile() {
                   {error}
                 </div>
               )}
+
+              <div className="d-flex align-items-center gap-3 mb-4">
+                {picturePath ? (
+                  <img
+                    src={uploadUrl(picturePath)}
+                    alt="Profile"
+                    className="rounded-circle border"
+                    width="80"
+                    height="80"
+                    style={{ objectFit: "cover" }}
+                  />
+                ) : (
+                  <div
+                    className="rounded-circle bg-primary-subtle d-flex align-items-center justify-content-center fs-3"
+                    style={{ width: 80, height: 80 }}
+                  >
+                    {(profile.full_name || "?").charAt(0).toUpperCase()}
+                  </div>
+                )}
+
+                <div>
+                  <label className="btn btn-outline-primary btn-sm mb-1">
+                    {uploading ? "Uploading..." : "Change picture"}
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg"
+                      hidden
+                      onChange={handlePictureChange}
+                      disabled={uploading}
+                    />
+                  </label>
+                  <div className="small text-muted">PNG or JPEG, up to 2 MB.</div>
+                </div>
+              </div>
 
               <form onSubmit={handleSubmit}>
                 <div className="row">
@@ -356,6 +437,21 @@ function StudentProfile() {
                       }
                       onChange={handleChange}
                     />
+                  </div>
+
+                  <div className="col-12 mb-3">
+                    <label className="form-label" htmlFor="profile-skills">
+                      Skills
+                    </label>
+
+                    <input
+                      id="profile-skills"
+                      className="form-control"
+                      value={skillsText}
+                      onChange={(event) => setSkillsText(event.target.value)}
+                      placeholder="Python, SQL, React"
+                    />
+                    <div className="form-text">Separate skills with commas.</div>
                   </div>
 
                   <div className="col-12 mb-4">

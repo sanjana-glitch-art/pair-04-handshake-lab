@@ -75,6 +75,14 @@ function Navbar() {
         </NavLink>
 
         <NavLink
+          to="/student/students"
+          className={getNavClass}
+        >
+          <span className="sidebar-icon">☺</span>
+          Students
+        </NavLink>
+
+        <NavLink
           to="/student/preferences"
           className={getNavClass}
         >

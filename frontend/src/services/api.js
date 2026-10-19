@@ -1,6 +1,11 @@
-const API_BASE_URL =
+export const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
   "http://127.0.0.1:9040";
+
+// Turns a stored relative upload path into a URL the browser can load.
+export function uploadUrl(path) {
+  return path ? `${API_BASE_URL}/${path}` : "";
+}
 
 async function request(endpoint, options = {}) {
   const token = localStorage.getItem("access_token");
@@ -21,6 +26,13 @@ async function request(endpoint, options = {}) {
   });
 
   const data = await response.json().catch(() => null);
+
+  // An expired or invalid session: drop the token and go back to login
+  // instead of leaving the user on a page that can only show errors.
+  if (response.status === 401 && token && !endpoint.startsWith("/auth/")) {
+    localStorage.removeItem("access_token");
+    window.location.assign("/login");
+  }
 
   if (!response.ok) {
     let message = "Request failed.";
@@ -145,8 +157,12 @@ export async function submitApplication(jobId, resumeFile) {
   return data;
 }
 
-export function getMyApplications() {
-  return request("/applications/me");
+export function getMyApplications(status = "") {
+  return request(
+    status
+      ? `/applications/me?status=${encodeURIComponent(status)}`
+      : "/applications/me"
+  );
 }
 
 export function getEvents(filters = {}) {
@@ -276,4 +292,107 @@ export function updateEmployerProfile(profileData) {
     method: "PUT",
     body: JSON.stringify(profileData),
   });
+}
+
+// Sends a file with multipart/form-data. The JSON helper above would set
+// the wrong Content-Type, so uploads use their own fetch.
+async function uploadFile(endpoint, fieldName, file) {
+  const token = localStorage.getItem("access_token");
+  const formData = new FormData();
+
+  formData.append(fieldName, file);
+
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  });
+
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(
+      typeof data?.detail === "string" ? data.detail : "Upload failed."
+    );
+  }
+
+  return data;
+}
+
+export function uploadMyProfilePicture(file) {
+  return uploadFile("/students/me/picture", "picture", file);
+}
+
+export function uploadEmployerPicture(file) {
+  return uploadFile("/employer/profile/picture", "picture", file);
+}
+
+export function searchStudents(filters = {}) {
+  const params = new URLSearchParams();
+
+  for (const key of ["name", "college", "major", "skill"]) {
+    if (filters[key]) {
+      params.append(key, filters[key]);
+    }
+  }
+
+  const queryString = params.toString();
+
+  return request(queryString ? `/students?${queryString}` : "/students");
+}
+
+export function getStudentMajors() {
+  return request("/students/majors");
+}
+
+export function getStudentProfile(studentId) {
+  return request(`/students/${studentId}`);
+}
+
+export function getEventDetails(eventId) {
+  return request(`/events/${eventId}`);
+}
+
+export function getEventRegistrations(eventId) {
+  return request(`/employer/events/${eventId}/registrations`);
+}
+
+export function getEmployerApplicationsFiltered(filters = {}) {
+  const params = new URLSearchParams();
+
+  if (filters.jobId) {
+    params.append("job_id", filters.jobId);
+  }
+
+  if (filters.status) {
+    params.append("status", filters.status);
+  }
+
+  const queryString = params.toString();
+
+  return request(
+    queryString
+      ? `/employer/applications?${queryString}`
+      : "/employer/applications"
+  );
+}
+
+// Resumes are private, so they are fetched with the token and shown
+// through a temporary object URL instead of a public link.
+export async function fetchResumeBlobUrl(applicationId) {
+  const token = localStorage.getItem("access_token");
+
+  const response = await fetch(
+    `${API_BASE_URL}/employer/applications/${applicationId}/resume`,
+    {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    }
+  );
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => null);
+    throw new Error(data?.detail || "Could not load the resume.");
+  }
+
+  return URL.createObjectURL(await response.blob());
 }

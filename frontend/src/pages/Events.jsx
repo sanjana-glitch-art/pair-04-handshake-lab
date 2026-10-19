@@ -70,13 +70,20 @@ function Events() {
       setMessage(
         result.message || "Successfully registered for the event."
       );
+      setEvents((current) =>
+        current.map((item) =>
+          item.id === eventId ? { ...item, is_registered: true } : item
+        )
+      );
     } catch (err) {
       setError(err.message || "Unable to register for the event.");
     }
   }
 
+  // Event dates are calendar dates; parse them as local time so
+  // they do not shift a day in US time zones.
   function formatDate(value) {
-    return new Date(value).toLocaleDateString();
+    return new Date(`${value}T00:00:00`).toLocaleDateString();
   }
 
   function formatTime(value) {
@@ -227,13 +234,21 @@ function Events() {
                     {event.eligibility || "Open to students"}
                   </p>
 
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={() => handleRegister(event.id)}
-                  >
-                    Register
-                  </button>
+                  {event.is_registered ? (
+                    <span className="badge text-bg-success">Registered</span>
+                  ) : event.is_eligible === false ? (
+                    <button type="button" className="btn btn-secondary" disabled>
+                      Not eligible
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={() => handleRegister(event.id)}
+                    >
+                      Register
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

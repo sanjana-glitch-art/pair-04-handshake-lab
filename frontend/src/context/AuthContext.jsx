@@ -29,15 +29,36 @@ function getRoleFromToken(token) {
   }
 }
 
+// Returns the stored token, or null (and clears it) once it has expired.
+function getStoredToken() {
+  const token = localStorage.getItem("access_token");
+
+  if (!token) {
+    return null;
+  }
+
+  try {
+    const payload = JSON.parse(
+      atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))
+    );
+
+    if (payload.exp && payload.exp * 1000 < Date.now()) {
+      localStorage.removeItem("access_token");
+      return null;
+    }
+  } catch {
+    localStorage.removeItem("access_token");
+    return null;
+  }
+
+  return token;
+}
+
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(() =>
-    localStorage.getItem("access_token")
-  );
+  const [token, setToken] = useState(getStoredToken);
 
   const [userRole, setUserRole] = useState(() =>
-    getRoleFromToken(
-      localStorage.getItem("access_token")
-    )
+    getRoleFromToken(getStoredToken())
   );
 
   async function login(credentials) {

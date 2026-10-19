@@ -26,6 +26,8 @@ import EmployerJobs from "./pages/EmployerJobs.jsx";
 import EmployerEvents from "./pages/EmployerEvents.jsx";
 import EmployerApplications from "./pages/EmployerApplications.jsx";
 import EmployerProfile from "./pages/EmployerProfile.jsx";
+import Students from "./pages/Students.jsx";
+import StudentProfileView from "./pages/StudentProfileView.jsx";
 
 function PlaceholderPage({ title }) {
   return (
@@ -120,11 +122,12 @@ function App() {
 
             <Route
               path="students"
-              element={
-                <PlaceholderPage
-                  title="Browse Students"
-                />
-              }
+              element={<Students />}
+            />
+
+            <Route
+              path="students/:studentId"
+              element={<StudentProfileView />}
             />
 
             <Route
@@ -165,10 +168,21 @@ function App() {
             />
 
             <Route
-              path="events"
+              path="students"
               element={
-                <PlaceholderPage
-                  title="Manage Events"
+                <Students
+                  profileBase="/employer/students"
+                  showSkillFilter
+                />
+              }
+            />
+
+            <Route
+              path="students/:studentId"
+              element={
+                <StudentProfileView
+                  backTo="/employer/students"
+                  backLabel="Students"
                 />
               }
             />
