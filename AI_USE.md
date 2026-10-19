@@ -5,6 +5,16 @@ Claude desktop app, working in a local clone of this repository.
 
 **What it was used for**
 
+- Planning the MySQL schema (database/schema.sql): users, student and company
+  profiles, skills, jobs, applications, events, registrations, and preferences, with
+  foreign keys and indexes.
+- Scaffolding the FastAPI backend: project layout, SQLAlchemy models, bcrypt password
+  hashing, JWT login, and the student auth/profile routes.
+- Building the React frontend: routing, protected routes, the student and employer
+  layouts, and the jobs, applications, events, preferences, and employer pages, with
+  Bootstrap styling.
+- A first version of the assistant route and chat page.
+- Each suggestion was reviewed and tested locally before being committed.
 - Reviewing the repository against the Lab 1 PDF and listing what was missing.
 - Fixing `database/schema.sql` (it created a table named `user` while every
   foreign key referenced `users`), converting `requirements.txt` from UTF-16
@@ -77,7 +87,19 @@ not from the assistant.
   "first in the tool's own ranking" from "promoted above the tool's ranking".
   The flawed run is kept as `docs/evaluation/injection_run1_truncated.md`.
 
-## Thummalapalli Sai Teja Sri Sanjana
+**Incorrect output 4:**
+  The generated schema.sql created a table named user, but every foreign key 
+  referenced users, so the script failed when loaded into MySQL. Detected: MySQL 
+  reported a missing referenced table when creating company_profiles. 
+  *Fix:* the table was renamed to users, which matches the SQLAlchemy model (commit 
+  be77755).
 
-*To be completed by Sanjana: which assistant(s) she used and for what, one
-incorrect output, how it was detected, and the fix.*
+**Incorrect output 5:**
+ The suggested pip freeze > requirements.txt command, run in Windows PowerShell, wrote the file as UTF-16, which pip cannot read. Detected: pip install -r requirements.txt failed on a fresh setup. 
+*Fix:*  the file was re-saved as UTF-8 and the missing packages were added (commit be77755).
+
+**Incorrect output 6:**
+The first assistant route had the model write tool calls as JSON text instead of using native tool calling, and capped the loop at 3 steps. Detected: replies that weren’t valid JSON were treated as final answers, and multi-step requests stopped early. 
+ *Fix:* it was replaced by the hand-built loop in app/assistant/ (commit 8278d55).
+
+
