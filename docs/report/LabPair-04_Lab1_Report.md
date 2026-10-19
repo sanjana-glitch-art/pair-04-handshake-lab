@@ -6,6 +6,9 @@ date: "October 2026"
 geometry: margin=0.9in
 fontsize: 10pt
 colorlinks: true
+header-includes:
+  - \usepackage{float}
+  - \floatplacement{figure}{H}
 ---
 
 # 1. Goals
@@ -121,7 +124,7 @@ seniors (class of 2027)" admits students graduating that year.
 | Company profile with picture | `GET/PUT /employer/profile`, `POST /employer/profile/picture` |
 | Students tab: search by name, college, skillset | `GET /students?skill=` |
 | Events tab: post events; view registered students and profiles | `/employer/events`, `GET /employer/events/{id}/registrations` |
-| Swagger / Postman | `/docs`; `docs/api/openapi.json`; `docs/api/pair4_handshake.postman_collection.json` |
+| Swagger / Postman | `/docs`; `docs/api/` (OpenAPI JSON/YAML, standalone Swagger HTML, Postman collection), see §4.5 |
 
 ## 4.2 Seed data
 
@@ -167,6 +170,33 @@ Clara, or Milpitas (plus remote jobs).
 ## 4.4 API tests
 
 <!-- API_TESTS -->
+
+## 4.5 API documentation
+
+FastAPI serves interactive Swagger UI at `http://127.0.0.1:9040/docs`. It is
+generated from the same Pydantic models that validate requests, so the
+documented parameters, types, enums, and response schemas match the code.
+The schema is exported to the repository in three forms:
+
+| Export | Contents |
+|---|---|
+| OpenAPI schema: `openapi.json`, `openapi.yaml` | OpenAPI 3.1, 35 paths, 38 schemas |
+| Standalone Swagger UI: `swagger.html` | Schema embedded; opens in a browser without the backend |
+| Postman collection: `pair4_handshake.postman_collection.json` | 18 requests with parameters, auth headers, and saved live sample responses |
+
+All files are in `docs/api/`.
+
+![Swagger UI: authentication, student, job, application, and event endpoints](screenshots/swagger_1_overview.jpg){width=62%}
+
+![Swagger UI: preferences, AI assistant, and employer endpoints](screenshots/swagger_2_assistant_employer.jpg){width=62%}
+
+![Swagger UI: employer events, applications, profile, and saved items](screenshots/swagger_3_employer_saved.jpg){width=62%}
+
+![Authorize dialog: Swagger signs in through the form-based /auth/token endpoint](screenshots/swagger_4_authorize.jpg){width=62%}
+
+![Try it out on GET /jobs: query parameters and the generated curl command](screenshots/swagger_5_try_jobs_parameters.jpg){width=62%}
+
+![The same request: request URL, HTTP 200, response body, and response headers](screenshots/swagger_6_try_jobs_response.jpg){width=62%}
 
 # 5. Part B — assistant transcripts
 

@@ -1,7 +1,10 @@
 """
 Exports API documentation to docs/api/:
 
-  openapi.json                    the full OpenAPI 3 schema (what Swagger UI shows)
+  openapi.json / openapi.yaml     the full OpenAPI 3 schema (what Swagger UI shows);
+                                  YAML is written when PyYAML is installed
+  swagger.html                    standalone Swagger UI with the schema embedded,
+                                  viewable without the backend running
   pair4_handshake.postman_collection.json
                                   a Postman v2.1 collection with parameters,
                                   headers, and a saved sample response for
@@ -48,6 +51,47 @@ REQUESTS = [
 ]
 
 
+SWAGGER_HTML = """<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pair 4 Handshake API</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14/swagger-ui.css">
+</head>
+<body>
+  <!--
+    Standalone Swagger UI for the Pair 4 Handshake API. The OpenAPI spec is
+    embedded below, so this file works without the backend running (Swagger UI
+    itself loads from a CDN). Regenerate with export_api_docs.py.
+    "Try it out" calls http://127.0.0.1:9040 and needs the backend running.
+  -->
+  <div id="swagger-ui"></div>
+  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14/swagger-ui-bundle.js"></script>
+  <script>
+    const spec = __SPEC__;
+    spec.servers = [{ url: "http://127.0.0.1:9040", description: "Local backend (PORT_BASE 9040)" }];
+    window.ui = SwaggerUIBundle({ spec, dom_id: "#swagger-ui", deepLinking: true });
+  </script>
+</body>
+</html>
+"""
+
+
+def write_schema_files(spec):
+    (OUT_DIR / "openapi.json").write_text(json.dumps(spec, indent=2))
+    (OUT_DIR / "swagger.html").write_text(SWAGGER_HTML.replace("__SPEC__", json.dumps(spec)))
+
+    try:
+        import yaml
+    except ImportError:
+        print("PyYAML not installed; skipped openapi.yaml")
+        return
+
+    with open(OUT_DIR / "openapi.yaml", "w") as handle:
+        yaml.safe_dump(spec, handle, sort_keys=False, allow_unicode=True, width=100)
+
+
 def login(client, email):
     response = client.post("/auth/login", json={"email": email, "password": PASSWORD})
     response.raise_for_status()
@@ -56,7 +100,7 @@ def login(client, email):
 
 def main():
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    (OUT_DIR / "openapi.json").write_text(json.dumps(app.openapi(), indent=2))
+    write_schema_files(app.openapi())
 
     client = httpx.Client(base_url=BASE, timeout=300)
     tokens = {

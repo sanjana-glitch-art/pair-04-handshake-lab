@@ -121,8 +121,11 @@ date so events stay upcoming; pass `--anchor-date YYYY-MM-DD` to pin them.
 
 ## API documentation
 
-- Swagger UI: http://127.0.0.1:9040/docs (live, from FastAPI)
-- `docs/api/openapi.json`: exported OpenAPI schema
+- Swagger UI: http://127.0.0.1:9040/docs (live, from FastAPI). Click
+  **Authorize** and sign in with a demo account (username = email).
+- `docs/api/openapi.json` and `docs/api/openapi.yaml`: exported OpenAPI schema
+- `docs/api/swagger.html`: standalone Swagger UI with the schema embedded;
+  open it in a browser without running the backend
 - `docs/api/pair4_handshake.postman_collection.json`: Postman collection
   with parameters, headers, and saved sample responses
 
