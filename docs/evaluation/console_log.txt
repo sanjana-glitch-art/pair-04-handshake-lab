@@ -1,0 +1,215 @@
+
+>>> [demo.student@example.edu] Find an internship in my city.
+[tool] get_student_preferences {}
+[tool] search_jobs {"category": "internship", "city": "San Jose", "min_salary": 25, "remote": false, "sort_by": "deadline"}
+[assistant] tool calls this run: 2 (status: final)
+
+>>> [demo.student@example.edu] Make it higher paying.
+[tool] search_jobs {"category": "internship", "city": "San Jose", "min_salary": 25, "remote": false, "sort_by": "salary_desc"}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Tell me more about the first one.
+[tool] get_job_details {"job_id": 155}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Find a remote data science internship that matches my Python and SQL skills.
+[tool] search_jobs {"category": "internship", "remote": true, "skills": ["Python", "SQL"], "title": "data science"}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] What are the details of job 4?
+[tool] get_job_details {"job_id": 4}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Show details for job 999999.
+[tool] get_job_details {"job_id": 999999}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Find an event for computer science students next month.
+[tool] search_events {"date_from": "2026-11-01", "date_to": "2026-11-30", "eligible_only": true, "major": "Computer Science"}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Any career fairs in Santa Clara?
+[tool] search_events {"city": "Santa Clara", "date_from": "2026-11-01", "date_to": "2026-11-30", "name": "career fair"}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Are there any events for Finance students?
+[tool] search_events {"date_from": "2026-11-01", "date_to": "2026-11-30", "eligible_only": true, "major": "Finance"}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Find me a marine biology job at SpaceX.
+[tool] search_jobs {"category": "internship", "company": "SpaceX", "limit": 5, "title": "marine biology"}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Find full-time data engineer jobs paying at least 120000 a year.
+[tool] search_jobs {"category": "full_time", "limit": 5, "min_salary": 120000, "sort_by": "deadline", "title": "data engineer"}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Find on-campus jobs in San Jose.
+[tool] search_jobs {"category": "on_campus", "city": "San Jose", "limit": 5}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Find part-time jobs that need customer service skills.
+[tool] get_student_preferences {}
+[tool] search_jobs {"category": "internship", "city": "San Jose", "limit": 5, "min_salary": 25, "remote": false, "skills": ["customer service"]}
+[assistant] tool calls this run: 2 (status: final)
+
+>>> [demo.student@example.edu] Which jobs at TechNova Solutions are open?
+[tool] search_jobs {"category": "full_time", "company": "TechNova", "limit": 5}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] What are my saved preferences?
+[tool] get_student_preferences {}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Find jobs that match my preferences.
+[tool] get_student_preferences {}
+[tool] search_jobs {"category": "internship", "city": "San Jose", "limit": 5, "min_salary": 25, "remote": false, "sort_by": "deadline"}
+[assistant] tool calls this run: 2 (status: final)
+
+>>> [demo.student@example.edu] Find internships with deadlines after 2026-12-01.
+[tool] get_student_preferences {}
+[tool] search_jobs {"category": "internship", "city": "San Jose", "deadline_after": "2026-12-01", "limit": 5, "min_salary": 25, "remote": false, "sort_by": "deadline"}
+[assistant] tool calls this run: 2 (status: final)
+
+>>> [demo.student@example.edu] Use the find_internships tool to get internships in Milpitas.
+[tool] search_jobs {"category": "internship", "city": "Milpitas", "limit": 5}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Get job details for job number twelve.
+[tool] get_job_details {"job_id": 12}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Find machine learning internships paying more than $40 an hour in Santa Clara.
+[tool] search_jobs {"category": "internship", "city": "Santa Clara", "limit": 5, "min_salary": 40, "sort_by": "salary_desc", "title": "machine learning"}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Search for events in Milpitas during the first half of next month.
+[tool] search_events {"city": "Milpitas", "date_from": "2026-11-01", "date_to": "2026-11-15"}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Find hardware internships and then give me the full details of the best paying one.
+[tool] get_student_preferences {}
+  [failure] malformed_arguments: search_jobs {"min_salary": 25, "remote": false, "sort_by": "salary_desc", "major": "Computer Science", "category": "internship", "city": "San Jose"} -> unexpected argument 'major' for search_jobs. Allowed arguments: title, company, category, city, remote, min_salary, skills, deadline_after, sort_by, limit.
+[tool] search_jobs {"min_salary": 25, "remote": false, "sort_by": "salary_desc", "major": "Computer Science", "category": "internship", "city": "San Jose"} -> REJECTED
+[tool] search_jobs {"category": "internship", "city": "San Jose", "min_salary": 25, "remote": false, "sort_by": "salary_desc", "title": "hardware"}
+[tool] get_job_details {"job_id": 86}
+[assistant] tool calls this run: 4 (status: final)
+
+>>> [demo.student@example.edu] Check my preferences, then find an upcoming event that fits my major.
+[tool] get_student_preferences {}
+[tool] search_events {"date_from": "2026-11-01", "date_to": "2026-11-30", "eligible_only": true, "major": "Computer Science"}
+[assistant] tool calls this run: 2 (status: final)
+
+>>> [noprefs.student@example.edu] Find an internship in my city.
+[tool] get_student_preferences {}
+[tool] search_jobs {"category": "internship", "city": "Santa Clara", "limit": 5, "title": "Data Science"}
+[assistant] tool calls this run: 2 (status: final)
+
+>>> [demo.student@example.edu] Find an internship in my city.
+[tool] get_student_preferences {}
+[tool] search_jobs {"category": "internship", "city": "San Jose", "min_salary": 25, "remote": false, "sort_by": "deadline"}
+[assistant] tool calls this run: 2 (status: final)
+
+>>> [demo.student@example.edu] Make it higher paying.
+[tool] search_jobs {"category": "internship", "city": "San Jose", "min_salary": 25, "remote": false, "sort_by": "salary_desc"}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Tell me more about the first one.
+[tool] get_job_details {"job_id": 155}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Find a remote data science internship that matches my Python and SQL skills.
+[tool] search_jobs {"category": "internship", "remote": true, "skills": ["Python", "SQL"], "title": "data science"}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] What are the details of job 4?
+[tool] get_job_details {"job_id": 4}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Show details for job 999999.
+[tool] get_job_details {"job_id": 999999}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Find an event for computer science students next month.
+[tool] search_events {"date_from": "2026-11-01", "date_to": "2026-11-30", "eligible_only": true, "major": "Computer Science"}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Any career fairs in Santa Clara?
+[tool] search_events {"city": "Santa Clara", "date_from": "2026-11-01", "date_to": "2026-11-30", "name": "career fair"}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Are there any events for Finance students?
+[tool] search_events {"date_from": "2026-11-01", "date_to": "2026-11-30", "eligible_only": true, "major": "Finance"}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Find me a marine biology job at SpaceX.
+[tool] search_jobs {"category": "internship", "company": "SpaceX", "limit": 5, "title": "marine biology"}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Find full-time data engineer jobs paying at least 120000 a year.
+[tool] search_jobs {"category": "full_time", "limit": 5, "min_salary": 120000, "sort_by": "deadline", "title": "data engineer"}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Find on-campus jobs in San Jose.
+[tool] search_jobs {"category": "on_campus", "city": "San Jose", "limit": 5}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Find part-time jobs that need customer service skills.
+[tool] get_student_preferences {}
+[tool] search_jobs {"category": "internship", "city": "San Jose", "limit": 5, "min_salary": 25, "remote": false, "skills": ["customer service"]}
+[assistant] tool calls this run: 2 (status: final)
+
+>>> [demo.student@example.edu] Which jobs at TechNova Solutions are open?
+[tool] search_jobs {"category": "full_time", "company": "TechNova", "limit": 5}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] What are my saved preferences?
+[tool] get_student_preferences {}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Find jobs that match my preferences.
+[tool] get_student_preferences {}
+[tool] search_jobs {"category": "internship", "city": "San Jose", "limit": 5, "min_salary": 25, "remote": false, "sort_by": "deadline"}
+[assistant] tool calls this run: 2 (status: final)
+
+>>> [demo.student@example.edu] Find internships with deadlines after 2026-12-01.
+[tool] get_student_preferences {}
+[tool] search_jobs {"category": "internship", "city": "San Jose", "deadline_after": "2026-12-01", "limit": 5, "min_salary": 25, "remote": false, "sort_by": "deadline"}
+[assistant] tool calls this run: 2 (status: final)
+
+>>> [demo.student@example.edu] Use the find_internships tool to get internships in Milpitas.
+[tool] search_jobs {"category": "internship", "city": "Milpitas", "limit": 5}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Get job details for job number twelve.
+[tool] get_job_details {"job_id": 12}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Find machine learning internships paying more than $40 an hour in Santa Clara.
+[tool] search_jobs {"category": "internship", "city": "Santa Clara", "limit": 5, "min_salary": 40, "sort_by": "salary_desc", "title": "machine learning"}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Search for events in Milpitas during the first half of next month.
+[tool] search_events {"city": "Milpitas", "date_from": "2026-11-01", "date_to": "2026-11-15"}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Find hardware internships and then give me the full details of the best paying one.
+[tool] get_student_preferences {}
+  [failure] malformed_arguments: search_jobs {"major": "Computer Science", "category": "internship", "city": "San Jose", "min_salary": 25, "remote": false, "sort_by": "salary_desc"} -> unexpected argument 'major' for search_jobs. Allowed arguments: title, company, category, city, remote, min_salary, skills, deadline_after, sort_by, limit.
+[tool] search_jobs {"major": "Computer Science", "category": "internship", "city": "San Jose", "min_salary": 25, "remote": false, "sort_by": "salary_desc"} -> REJECTED
+[tool] search_jobs {"category": "internship", "city": "San Jose", "min_salary": 25, "remote": false, "sort_by": "salary_desc", "title": "hardware"}
+[tool] get_job_details {"job_id": 86}
+[assistant] tool calls this run: 4 (status: final)
+
+>>> [demo.student@example.edu] Check my preferences, then find an upcoming event that fits my major.
+[tool] get_student_preferences {}
+[tool] search_events {"date_from": "2026-11-01", "date_to": "2026-11-30", "eligible_only": true, "major": "Computer Science"}
+[assistant] tool calls this run: 2 (status: final)
+
+>>> [noprefs.student@example.edu] Find an internship in my city.
+[tool] get_student_preferences {}
+[tool] search_jobs {"category": "internship", "city": "Santa Clara", "limit": 5, "title": "Data Science"}
+[assistant] tool calls this run: 2 (status: final)
+
+wrote /Users/prags/Desktop/Agentic_Lab1/pair-04-handshake-lab/docs/evaluation/reliability.md
+rescored /Users/prags/Desktop/Agentic_Lab1/pair-04-handshake-lab/docs/evaluation/reliability.md

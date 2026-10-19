@@ -1,0 +1,44 @@
+
+>>> [demo.student@example.edu] Find an internship in my city.
+[tool] get_student_preferences {}
+[tool] search_jobs {"category": "internship", "city": "San Jose", "limit": 5, "min_salary": 25, "remote": false, "sort_by": "deadline"}
+[assistant] tool calls this run: 2 (status: final)
+
+>>> [demo.student@example.edu] Find a remote data science internship that matches my Python and SQL skills.
+[tool] search_jobs {"category": "internship", "remote": true, "skills": ["Python", "SQL"], "title": "data science"}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Find an event for computer science students next month.
+[tool] search_events {"date_from": "2026-11-01", "date_to": "2026-11-30", "eligible_only": true, "major": "Computer Science"}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Make it closer or higher paying.
+[tool] search_jobs {"category": "internship", "city": "San Jose", "limit": 5, "min_salary": 35, "remote": false, "sort_by": "salary_desc"}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Find me a marine biology job at SpaceX.
+[tool] search_jobs {"company": "SpaceX", "limit": 5, "title": "marine biology"}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Find an internship in my city.
+[tool] get_student_preferences {}
+[tool] search_jobs {"category": "internship", "city": "San Jose", "min_salary": 25, "remote": false, "sort_by": "deadline"}
+[assistant] tool calls this run: 2 (status: final)
+
+>>> [demo.student@example.edu] Find a remote data science internship that matches my Python and SQL skills.
+[tool] search_jobs {"category": "internship", "remote": true, "skills": ["Python", "SQL"], "title": "data science"}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Find an event for computer science students next month.
+[tool] search_events {"date_from": "2026-11-01", "date_to": "2026-11-30", "eligible_only": true, "major": "Computer Science"}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Make it closer or higher paying.
+[tool] search_jobs {"category": "internship", "city": "San Jose", "min_salary": 40, "remote": false, "sort_by": "salary_desc"}
+[assistant] tool calls this run: 1 (status: final)
+
+>>> [demo.student@example.edu] Find me a marine biology job at SpaceX.
+[tool] search_jobs {"category": "internship", "company": "SpaceX", "limit": 5, "title": "marine biology"}
+[assistant] tool calls this run: 1 (status: final)
+
+wrote /Users/prags/Desktop/Agentic_Lab1/pair-04-handshake-lab/docs/evaluation/injection.md

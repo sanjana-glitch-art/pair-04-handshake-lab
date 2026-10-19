@@ -1,0 +1,1782 @@
+{
+  "before_repair": [
+    {
+      "conversation": "A",
+      "message": "Find an internship in my city.",
+      "needed": [
+        "get_student_preferences",
+        "search_jobs"
+      ],
+      "called": [
+        "get_student_preferences",
+        "search_jobs"
+      ],
+      "calls": [
+        {
+          "name": "get_student_preferences",
+          "arguments": {},
+          "valid": true
+        },
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "category": "internship",
+            "city": "San Jose",
+            "min_salary": 25,
+            "remote": false,
+            "sort_by": "deadline"
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 2,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are 5 internships in San Jose matching your criteria (onsite, $25/hr+):\n\n1. **UX Design Intern** | Nova Campus Services | San Jose, CA | $41-$45/hr | Deadline: 2026-10-22  \n   Skills: Communication, Figma  \n\n2. **Cloud Engineering Intern** | Polaris Cloud Services | San Jose, CA | $38-$49/hr | Deadline: 2026-10-23  \n   Skills: Docker, Kubernetes, Linux  \n\n3. **Software Engineering Intern** | Keystone Analytics | San Jose, CA | $45-$56/hr | Deadline: 2026-11-06  \n   Skills: Java, SQL  \n\n4. **Data Analyst Intern** | Horizon EdTech | San Jose, CA | $49-$61/hr | Deadline: 2026-11-14  \n   Skills: Data Analysis, Excel, SQL, Tableau  \n\n5. **Machine Learning Intern** | Summit Storage Inc | San Jose, CA | $32-$43/hr | Deadline: 2026-11-14  \n   Skills: Machine Learning, Python, PyTorch  \n\nWould you like details about any of these?",
+      "seconds": 72.7,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "A",
+      "message": "Make it higher paying.",
+      "needed": [
+        "search_jobs"
+      ],
+      "called": [
+        "search_jobs"
+      ],
+      "calls": [
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "category": "internship",
+            "city": "San Jose",
+            "min_salary": 25,
+            "remote": false,
+            "sort_by": "salary_desc"
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are 5 higher-paying internships in San Jose (sorted by salary descending):\n\n1. **Data Analyst Intern** | Horizon EdTech | San Jose, CA | $49-$61/hr | Deadline: 2026-11-14  \n   Skills: Data Analysis, Excel, SQL, Tableau  \n\n2. **Hardware Test Intern** | Riverbend Consulting | San Jose, CA | $47-$60/hr | Deadline: 2027-01-16  \n   Skills: C++, CAD, Linux  \n\n3. **Software Engineering Intern** | Lakeside Insurance | San Jose, CA | $49-$58/hr | Deadline: 2027-01-01  \n   Skills: Python, SQL  \n\n4. **Data Analyst Intern** | Elm Street Bank | San Jose, CA | $49-$57/hr | Deadline: 2026-12-03  \n   Skills: Excel, SQL, Tableau  \n\n5. **Hardware Test Intern** | Meridian Hardware | San Jose, CA | $47-$57/hr | Deadline: 2026-12-22  \n   Skills: C++, CAD, Linux  \n\nWould you like details about any of these?",
+      "seconds": 78.0,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "A",
+      "message": "Tell me more about the first one.",
+      "needed": [
+        "get_job_details"
+      ],
+      "called": [
+        "get_job_details"
+      ],
+      "calls": [
+        {
+          "name": "get_job_details",
+          "arguments": {
+            "job_id": 155
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here\u2019s detailed info for the **Data Analyst Intern** at **Horizon EdTech** (job ID=155):\n\n---\n\n**Company**: Horizon EdTech  \n**Location**: San Jose, CA  \n**Category**: Internship  \n**Pay**: $49\u2013$61/hour  \n**Deadline**: 2026-11-14 (open until this date)  \n**Skills Required**: Data Analysis, Excel, SQL, Tableau  \n\n**Description**:  \nYou\u2019ll work on real projects with a mentor, focusing on data analysis using tools like Tableau, Excel, SQL, and data interpretation. Ideal for students looking to gain hands-on experience in educational technology.\n\n**About the Company**:  \nHorizon EdTech is an education technology company in San Jose that hires students and new graduates for internships and entry-level roles.\n\n**Contact**:  \nEmail: [careers@horizonedtech.example.com](mailto:careers@horizonedtech.example.com) | Phone: 408-555-1040  \n\n**Other Recent Postings by This Company**:  \n- Financial Analyst Intern (deadline: 2026-11-26)  \n- Frontend Developer Intern (deadline: 2026-12-09)  \n- Financial Analyst Intern (deadline: 2026-10-30)  \n\nWould you like to save this internship or explore other options?",
+      "seconds": 59.7,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "B",
+      "message": "Find a remote data science internship that matches my Python and SQL skills.",
+      "needed": [
+        "search_jobs"
+      ],
+      "called": [
+        "search_jobs"
+      ],
+      "calls": [
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "title": "data science",
+            "skills": [
+              "Python",
+              "SQL"
+            ],
+            "remote": true,
+            "category": "internship"
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are 3 remote data science internships matching your Python/SQL skills:\n\n1. **Data Science Intern** | Copperline Networks | Remote | $48-$54/hr | Deadline: 2026-12-10  \n   Skills: Machine Learning, Python, SQL  \n\n2. **Data Science Intern** | Bayline Logistics | Remote | $33-$41/hr | Deadline: 2026-12-15  \n   Skills: Pandas, Python, SQL, Statistics  \n\n3. **Data Science Intern** | Evergreen Energy Tech | Remote | $43-$51/hr | Deadline: 2027-01-04  \n   Skills: Pandas, Python, Statistics  \n\nWould you like to save any of these?",
+      "seconds": 62.1,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "B",
+      "message": "What are the details of job 4?",
+      "needed": [
+        "get_job_details"
+      ],
+      "called": [
+        "get_job_details"
+      ],
+      "calls": [
+        {
+          "name": "get_job_details",
+          "arguments": {
+            "job_id": 4
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are the details for **job 4**:\n\n**Title:** Data Science Intern  \n**Company:** Copperline Networks (San Jose, CA)  \n**Location:** Remote  \n**Category:** Internship  \n**Pay:** $48\u2013$54/hr  \n**Deadline:** 2026-12-10  \n**Skills Required:** Machine Learning, Python, SQL  \n\n**Description:**  \nWork with SQL, Machine Learning, and Python on real projects with a mentor. Contact careers@copperlinenetworks.example.com for questions.  \n\n**About the Company:**  \nEducation technology company based in San Jose hiring students and new graduates.  \n\n**Contact:**  \nEmail: careers@copperlinenetworks.example.com | Phone: 408-555-1016  \n\n**Other Recent Postings by This Company:**  \n- UX Design Intern (id=78)  \n- Social Media Assistant (id=41)  \n- Campus Recreation Front Desk (id=100)  \n\nWould you like to save this job?",
+      "seconds": 53.6,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "B",
+      "message": "Show details for job 999999.",
+      "needed": [
+        "get_job_details"
+      ],
+      "called": [
+        "get_job_details"
+      ],
+      "calls": [
+        {
+          "name": "get_job_details",
+          "arguments": {
+            "job_id": 999999
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "The job with ID 999999 does not exist in our database. Did you mean one of the jobs listed earlier (e.g., job 4)? Let me know if you'd like details about a valid job ID or need help finding other opportunities!",
+      "seconds": 44.8,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "C",
+      "message": "Find an event for computer science students next month.",
+      "needed": [
+        "search_events"
+      ],
+      "called": [
+        "search_events"
+      ],
+      "calls": [
+        {
+          "name": "search_events",
+          "arguments": {
+            "date_from": "2026-11-01",
+            "date_to": "2026-11-30",
+            "major": "Computer Science",
+            "eligible_only": true
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are 5 events for Computer Science students next month:\n\n1. **Foxglove Health Cloud Computing Bootcamp**  \n   Nov 3, 2026 | Milpitas, CA  \n   Hands-on cloud deployment workshop (eligible: CS students)\n\n2. **Driftwood Design Studio Hackathon Kickoff**  \n   Nov 5, 2026 | Santa Clara, CA  \n   24-hour build with mentors (eligible: CS students)\n\n3. **Valley Health AI Cloud Computing Bootcamp**  \n   Nov 8, 2026 | San Jose, CA  \n   Cloud deployment workshop (eligible: CS students)\n\n4. **CircuitPath Semiconductors Resume Review**  \n   Nov 1, 2026 | San Jose, CA  \n   One-on-one feedback (open to all majors)\n\n5. **Brightpath Retail Resume Review**  \n   Nov 10, 2026 | San Jose, CA  \n   One-on-one feedback (open to all majors)\n\nWould you like to save any of these?",
+      "seconds": 59.7,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "C",
+      "message": "Any career fairs in Santa Clara?",
+      "needed": [
+        "search_events"
+      ],
+      "called": [
+        "search_events"
+      ],
+      "calls": [
+        {
+          "name": "search_events",
+          "arguments": {
+            "name": "career fair",
+            "date_from": "2026-11-01",
+            "date_to": "2026-11-30",
+            "city": "Santa Clara"
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are career fairs in Santa Clara next month:\n\n1. **Lumen Devices Bay Area Tech Career Fair**  \n   Nov 1, 2026 | Santa Clara University | All majors  \n   Meet tech recruiters hiring interns and new grads.\n\n2. **Pinecrest Security Bay Area Tech Career Fair**  \n   Nov 30, 2026 | Santa Clara University | All majors  \n   Meet tech recruiters hiring interns and new grads.\n\nWould you like to save either of these?",
+      "seconds": 76.3,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "C",
+      "message": "Are there any events for Finance students?",
+      "needed": [
+        "search_events"
+      ],
+      "called": [
+        "search_events"
+      ],
+      "calls": [
+        {
+          "name": "search_events",
+          "arguments": {
+            "major": "Finance",
+            "date_from": "2026-11-01",
+            "date_to": "2026-11-30",
+            "eligible_only": true
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are events open to **Finance students** (no Finance-specific events found, but these are open to all majors):\n\n1. **CircuitPath Semiconductors Resume Review**  \n   Nov 1, 2026 | San Jose, CA | All majors  \n\n2. **Lumen Devices Tech Career Fair**  \n   Nov 1, 2026 | Santa Clara, CA | All majors  \n\n3. **Zephyr Drones Startup Pitch Night**  \n   Nov 2, 2026 | Santa Clara, CA | All majors  \n\n4. **Brightpath Retail Resume Review**  \n   Nov 10, 2026 | San Jose, CA | All majors  \n\n5. **Nova Campus Services Resume Review**  \n   Nov 11, 2026 | San Jose, CA | All majors  \n\nWould you like to save any of these?",
+      "seconds": 59.5,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "D",
+      "message": "Find me a marine biology job at SpaceX.",
+      "needed": [
+        "search_jobs"
+      ],
+      "called": [
+        "search_jobs"
+      ],
+      "calls": [
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "category": "internship",
+            "title": "marine biology",
+            "company": "SpaceX",
+            "limit": 5
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "There are no open marine biology jobs at SpaceX in the database. SpaceX does not currently have positions in marine biology across any job categories (full_time, part_time, etc.). Would you like to broaden your search to related fields like environmental science, aerospace engineering, or oceanography?",
+      "seconds": 34.5,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "E",
+      "message": "Find full-time data engineer jobs paying at least 120000 a year.",
+      "needed": [
+        "search_jobs"
+      ],
+      "called": [
+        "search_jobs"
+      ],
+      "calls": [
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "category": "full_time",
+            "title": "data engineer",
+            "min_salary": 120000,
+            "sort_by": "deadline",
+            "limit": 5
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are 5 full-time data engineer jobs paying at least $120,000/year:\n\n1. **Data Engineer** | Ridgeline Media Labs | Santa Clara, CA | $145k-$175k/yr | Deadline: 2026-11-07  \n   Skills: Kafka, Python, Spark, SQL  \n\n2. **Data Engineer** | Redwood Robotics | Milpitas, CA | $140k-$175k/yr | Deadline: 2026-11-25  \n   Skills: Python, SQL  \n\n3. **Data Engineer** | Northstar Payments | Milpitas, CA | $110k-$135k/yr | Deadline: 2026-12-01  \n   Skills: AWS, Python, Spark, SQL  \n\n4. **Data Engineer** | Kestrel Aerospace | Santa Clara, CA | $120k-$135k/yr | Deadline: 2026-12-11  \n   Skills: Kafka, Spark, SQL  \n\n5. **Data Engineer** | Sierra Sensor Co | Remote | $140k-$160k/yr | Deadline: 2026-12-24  \n   Skills: Python, SQL  \n\nWould you like to save any of these?",
+      "seconds": 113.1,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "F",
+      "message": "Find on-campus jobs in San Jose.",
+      "needed": [
+        "search_jobs"
+      ],
+      "called": [
+        "search_jobs"
+      ],
+      "calls": [
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "category": "on_campus",
+            "city": "San Jose",
+            "limit": 5
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are 5 on-campus jobs in San Jose:\n\n1. **Teaching Assistant - Data Structures** | Riverbend Consulting | $26-$33/hr | Deadline: 2026-10-26  \n   Skills: C++, Communication, Java  \n\n2. **Campus IT Help Desk Assistant** | Opal Commerce | $21-$25/hr | Deadline: 2026-10-30  \n   Skills: Customer Service, Linux  \n\n3. **Teaching Assistant - Data Structures** | TechNova Solutions | $24-$26/hr | Deadline: 2026-10-30  \n   Skills: C++, Communication, Java  \n\n4. **Campus IT Help Desk Assistant** | Northstar Payments | $22-$26/hr | Deadline: 2026-11-04  \n   Skills: Communication, Customer Service, Linux  \n\n5. **Teaching Assistant - Data Structures** | Riverbend Consulting | $21-$26/hr | Deadline: 2026-11-08  \n   Skills: C++, Communication, Java  \n\nLet me know if you'd like to refine the search!",
+      "seconds": 72.6,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "G",
+      "message": "Find part-time jobs that need customer service skills.",
+      "needed": [
+        "search_jobs"
+      ],
+      "called": [
+        "get_student_preferences",
+        "search_jobs"
+      ],
+      "calls": [
+        {
+          "name": "get_student_preferences",
+          "arguments": {},
+          "valid": true
+        },
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "min_salary": 25,
+            "remote": false,
+            "limit": 5,
+            "category": "internship",
+            "city": "San Jose",
+            "skills": [
+              "customer service"
+            ]
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 2,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "No part-time jobs with customer service skills found in San Jose, CA matching your filters (internship category, $25/hr, onsite). Try loosening these filters:\n\n1. Change category to `part_time` instead of internship\n2. Remove customer service skill requirement\n3. Consider remote options (remote=false is strict)\n\nWould you like me to search with adjusted filters?",
+      "seconds": 92.2,
+      "arguments_ok": false,
+      "correct_strict": false
+    },
+    {
+      "conversation": "H",
+      "message": "Which jobs at TechNova Solutions are open?",
+      "needed": [
+        "search_jobs"
+      ],
+      "called": [
+        "search_jobs"
+      ],
+      "calls": [
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "company": "TechNova",
+            "category": "full_time",
+            "limit": 5
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here's an open job at TechNova Solutions:\n\n1. **Junior Financial Analyst**  \n   - **Location:** Remote  \n   - **Pay:** $130,000-$150,000/yr  \n   - **Deadline:** 2026-12-07  \n   - **Skills Required:** Excel, Financial Modeling  \n\nWould you like details about this job or help applying?",
+      "seconds": 41.3,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "I",
+      "message": "What are my saved preferences?",
+      "needed": [
+        "get_student_preferences"
+      ],
+      "called": [
+        "get_student_preferences"
+      ],
+      "calls": [
+        {
+          "name": "get_student_preferences",
+          "arguments": {},
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Your saved preferences are:  \n- **Preferred city**: San Jose  \n- **Job category**: Internship  \n- **Minimum pay**: $25/hour  \n- **Work mode**: Onsite  \n- **Major (jobs)**: Computer Science  \n- **Major (events)**: Computer Science  \n- **Graduation year**: 2027  \n\nLet me know if you'd like to adjust any of these!",
+      "seconds": 40.5,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "J",
+      "message": "Find jobs that match my preferences.",
+      "needed": [
+        "get_student_preferences",
+        "search_jobs"
+      ],
+      "called": [
+        "get_student_preferences",
+        "search_jobs"
+      ],
+      "calls": [
+        {
+          "name": "get_student_preferences",
+          "arguments": {},
+          "valid": true
+        },
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "remote": false,
+            "limit": 5,
+            "sort_by": "deadline",
+            "category": "internship",
+            "city": "San Jose",
+            "min_salary": 25
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 2,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are 5 internship opportunities in San Jose matching your preferences (Computer Science major, $25+/hr, onsite):\n\n1. **UX Design Intern** | Nova Campus Services | $41-$45/hr | Deadline: 2026-10-22  \n   Skills: Communication, Figma  \n\n2. **Cloud Engineering Intern** | Polaris Cloud Services | $38-$49/hr | Deadline: 2026-10-23  \n   Skills: Docker, Kubernetes, Linux  \n\n3. **Software Engineering Intern** | Keystone Analytics | $45-$56/hr | Deadline: 2026-11-06  \n   Skills: Java, SQL  \n\n4. **Data Analyst Intern** | Horizon EdTech | $49-$61/hr | Deadline: 2026-11-14  \n   Skills: Data Analysis, Excel, SQL, Tableau  \n\n5. **Machine Learning Intern** | Summit Storage Inc | $32-$43/hr | Deadline: 2026-11-14  \n   Skills: Python, PyTorch  \n\nWould you like to save any of these or refine the search further?",
+      "seconds": 149.6,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "K",
+      "message": "Find internships with deadlines after 2026-12-01.",
+      "needed": [
+        "search_jobs"
+      ],
+      "called": [
+        "get_student_preferences",
+        "search_jobs"
+      ],
+      "calls": [
+        {
+          "name": "get_student_preferences",
+          "arguments": {},
+          "valid": true
+        },
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "deadline_after": "2026-12-01",
+            "sort_by": "deadline",
+            "limit": 5,
+            "category": "internship",
+            "city": "San Jose",
+            "min_salary": 25,
+            "remote": false
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 2,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are 5 internships matching your criteria (deadline after 2026-12-01, San Jose, $25/hr min, onsite, Computer Science):\n\n1. **Data Analyst Intern** | Elm Street Bank | San Jose, CA | $49\u2013$57/hr | Deadline: 2026-12-03  \n   Skills: Excel, SQL, Tableau  \n\n2. **Mechanical Design Intern** | Bayline Logistics | San Jose, CA | $24\u2013$35/hr | Deadline: 2026-12-04  \n   Skills: CAD, Excel  \n\n3. **Machine Learning Intern** | Cobalt DevTools | San Jose, CA | $42\u2013$53/hr | Deadline: 2026-12-06  \n   Skills: Python, PyTorch, TensorFlow  \n\n4. **Frontend Developer Intern** | Opal Commerce | San Jose, CA | $23\u2013$31/hr | Deadline: 2026-12-09  \n   Skills: Git, JavaScript  \n\n5. **Frontend Developer Intern** | Horizon EdTech | San Jose, CA | $43\u2013$49/hr | Deadline: 2026-12-09  \n   Skills: Figma, Git, React  \n\nWould you like to refine the search (e.g., higher pay, specific skills)?",
+      "seconds": 226.7,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "L",
+      "message": "Use the find_internships tool to get internships in Milpitas.",
+      "needed": [
+        "search_jobs"
+      ],
+      "called": [
+        "search_jobs"
+      ],
+      "calls": [
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "category": "internship",
+            "city": "Milpitas",
+            "limit": 5
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are 5 internships in Milpitas:\n\n1. **Frontend Developer Intern** | Copperline Networks | $22-$31/hr | Deadline: 2026-10-20  \n   Skills: Figma, Git, React  \n\n2. **Backend Developer Intern** | Mosaic Learning | $32-$45/hr | Deadline: 2026-10-21  \n   Skills: Docker, Python, SQL  \n\n3. **Financial Analyst Intern** | Trident Chips | $49-$56/hr | Deadline: 2026-10-22  \n   Skills: Excel, Financial Modeling, SQL  \n\n4. **Frontend Developer Intern** | Silicon Orchard Labs | $22-$32/hr | Deadline: 2026-10-23  \n   Skills: Git, JavaScript  \n\n5. **UX Design Intern** | Silicon Orchard Labs | $44-$58/hr | Deadline: 2026-10-26  \n   Skills: Communication, Figma  \n\nWould you like to save any of these or refine the search further?",
+      "seconds": 70.5,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "M",
+      "message": "Get job details for job number twelve.",
+      "needed": [
+        "get_job_details"
+      ],
+      "called": [
+        "get_job_details"
+      ],
+      "calls": [
+        {
+          "name": "get_job_details",
+          "arguments": {
+            "job_id": 12
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are the details for job #12:\n\n**Part-Time Web Developer**  \n**Company:** Cedar Peak Software (Milpitas, CA)  \n**Pay:** $25\u2013$31/hr  \n**Deadline:** 2027-01-15  \n**Skills Required:** JavaScript, Node.js, React  \n\n**Description:**  \nWork on real projects with React, Node.js, and JavaScript under a mentor's guidance. Open to students and new graduates.  \n\n**Contact:**  \nEmail: careers@cedarpeaksoftware.example.com | Phone: 408-555-1021  \n\n**Company Notes:**  \nCedar Peak Software is a data analytics firm in Milpitas. They also posted:  \n- Junior Financial Analyst (id=79)  \n- Data Engineer (id=96)  \n- Marketing Intern (id=37)  \n\nLet me know if you'd like to save this job or need help applying!",
+      "seconds": 55.8,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "N",
+      "message": "Find machine learning internships paying more than $40 an hour in Santa Clara.",
+      "needed": [
+        "search_jobs"
+      ],
+      "called": [
+        "search_jobs"
+      ],
+      "calls": [
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "city": "Santa Clara",
+            "min_salary": 40,
+            "sort_by": "salary_desc",
+            "limit": 5,
+            "category": "internship",
+            "title": "machine learning"
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are 3 machine learning internships in Santa Clara paying above $40/hr:\n\n1. **ID 64**  \n   Machine Learning Intern | Ridgeline Media Labs | Santa Clara, CA | $51-$62/hr | Deadline: 2026-10-21 | Skills: Python, TensorFlow\n\n2. **ID 217**  \n   Machine Learning Intern | Quantum Leaf Systems | Santa Clara, CA | $48-$61/hr | Deadline: 2026-10-30 | Skills: Python, PyTorch, Machine Learning\n\n3. **ID 290**  \n   Machine Learning Intern | Evergreen Energy Tech | Santa Clara, CA | $49-$53/hr | Deadline: 2026-12-13 | Skills: PyTorch, Machine Learning\n\nWould you like to save any of these or refine the search further?",
+      "seconds": 104.3,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "O",
+      "message": "Search for events in Milpitas during the first half of next month.",
+      "needed": [
+        "search_events"
+      ],
+      "called": [
+        "search_events"
+      ],
+      "calls": [
+        {
+          "name": "search_events",
+          "arguments": {
+            "city": "Milpitas",
+            "date_from": "2026-11-01",
+            "date_to": "2026-11-15"
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are 2 events in Milpitas during November 1-15, 2026:\n\n1. **Lumen Devices Design Portfolio Review**  \n   Nov 1, 12:00 PM | Milpitas Community Center  \n   \ud83c\udf93 Eligible: Graphic Design students  \n   Summary: Designers review student portfolios and share hiring tips. Hosted by Lumen Devices.\n\n2. **Foxglove Health Cloud Computing Bootcamp**  \n   Nov 3, 10:30 AM | Milpitas Community Center  \n   \ud83c\udf93 Eligible: Computer Science students  \n   Summary: Hands-on session deploying a small service to the cloud. Hosted by Foxglove Health.\n\nLet me know if you'd like to save any of these or need more details!",
+      "seconds": 125.5,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "P",
+      "message": "Find hardware internships and then give me the full details of the best paying one.",
+      "needed": [
+        "get_job_details",
+        "search_jobs"
+      ],
+      "called": [
+        "get_student_preferences",
+        "search_jobs",
+        "search_jobs",
+        "get_job_details"
+      ],
+      "calls": [
+        {
+          "name": "get_student_preferences",
+          "arguments": {},
+          "valid": true
+        },
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "min_salary": 25,
+            "remote": false,
+            "sort_by": "salary_desc",
+            "major": "Computer Science",
+            "category": "internship",
+            "city": "San Jose"
+          },
+          "valid": false
+        },
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "city": "San Jose",
+            "title": "hardware",
+            "min_salary": 25,
+            "remote": false,
+            "sort_by": "salary_desc",
+            "category": "internship"
+          },
+          "valid": true
+        },
+        {
+          "name": "get_job_details",
+          "arguments": {
+            "job_id": 86
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 3,
+      "invalid_calls": 1,
+      "failures": [
+        {
+          "kind": "malformed_arguments",
+          "detail": "search_jobs {\"min_salary\": 25, \"remote\": false, \"sort_by\": \"salary_desc\", \"major\": \"Computer Science\", \"category\": \"internship\", \"city\": \"San Jose\"} -> unexpected argument 'major' for search_jobs. Allowed arguments: title, company, category, city, remote, min_salary, skills, deadline_after, sort_by, limit."
+        }
+      ],
+      "occurred": [
+        "malformed_arguments"
+      ],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are the full details for the top-paying Hardware Test Intern opportunity:\n\n**Job ID 86**  \n**Title:** Hardware Test Intern  \n**Company:** Riverbend Consulting (San Jose, CA)  \n**Location:** San Jose, CA  \n**Category:** Internship  \n**Pay:** $47\u2013$60/hour  \n**Deadline:** 2027-01-16  \n**Skills Required:** C++, CAD, Linux  \n\n**Description:**  \nWork on real projects with CAD, C++, and Linux under a mentor's guidance. Ideal for Computer Science students seeking hands-on experience in hardware testing.  \n\n**Company Profile:**  \nA fintech firm in San Jose hiring students and new graduates. Recent postings include similar internships (IDs 280, 275) and a Software Engineer role (ID 288).  \n\n**Contact:**  \nEmail: careers@riverbendconsulting.example.com | Phone: 408-555-1028  \n\nWould you like to save this job?",
+      "seconds": 161.0,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "Q",
+      "message": "Check my preferences, then find an upcoming event that fits my major.",
+      "needed": [
+        "get_student_preferences",
+        "search_events"
+      ],
+      "called": [
+        "get_student_preferences",
+        "search_events"
+      ],
+      "calls": [
+        {
+          "name": "get_student_preferences",
+          "arguments": {},
+          "valid": true
+        },
+        {
+          "name": "search_events",
+          "arguments": {
+            "date_from": "2026-11-01",
+            "date_to": "2026-11-30",
+            "eligible_only": true,
+            "major": "Computer Science"
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 2,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are 5 relevant events for your **Computer Science** major in November 2026:\n\n1. **Foxglove Health Cloud Computing Bootcamp**  \n   \ud83d\udccd Santa Clara University Benson Center, Santa Clara, CA  \n   \ud83d\udcc5 2026-11-03 10:30  \n   \ud83d\udccc Eligible: CS students  \n   Summary: Hands-on cloud service deployment workshop.\n\n2. **Driftwood Design Studio Hackathon Kickoff**  \n   \ud83d\udccd Santa Clara University Benson Center, Santa Clara, CA  \n   \ud83d\udcc5 2026-11-05 16:30  \n   \ud83d\udccc Eligible: CS students  \n   Summary: 24-hour team build with mentors.\n\n3. **Valley Health AI Cloud Computing Bootcamp**  \n   \ud83d\udccd San Jose Convention Center, San Jose, CA  \n   \ud83d\udcc5 2026-11-08 14:30  \n   \ud83d\udccc Eligible: CS students  \n   Summary: Cloud service deployment workshop.\n\n4. **CircuitPath Semiconductors Resume Review Workshop**  \n   \ud83d\udccd SJSU Engineering Building, San Jose, CA  \n   \ud83d\udcc5 2026-11-01 10:00  \n   \ud83d\udccc Eligible: All majors  \n   Summary: One-on-one resume feedback.\n\n5. **Brightpath Retail Resume Review Workshop**  \n   \ud83d\udccd SJSU Engineering Building, San Jose, CA  \n   \ud83d\udcc5 2026-11-10 17:30  \n   \ud83d\udccc Eligible: All majors  \n   Summary: One-on-one resume feedback.\n\nWould you like to save any of these events?",
+      "seconds": 141.9,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "R",
+      "message": "Find an internship in my city.",
+      "needed": [
+        "get_student_preferences"
+      ],
+      "called": [
+        "get_student_preferences",
+        "search_jobs"
+      ],
+      "calls": [
+        {
+          "name": "get_student_preferences",
+          "arguments": {},
+          "valid": true
+        },
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "title": "Data Science",
+            "limit": 5,
+            "city": "Santa Clara",
+            "category": "internship"
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 2,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are 2 internships in Santa Clara matching your profile (Data Science major):\n\n1. **Data Science Intern** | Lakeside Insurance  \n   \ud83d\udccd Santa Clara, CA | \ud83d\udcb5 $43-$49/hr | \ud83d\udcc5 Deadline: 2026-11-23  \n   Skills: Machine Learning, SQL, Statistics  \n\n2. **Data Science Intern** | Beacon Civic Tech  \n   \ud83d\udccd Santa Clara, CA | \ud83d\udcb5 $42-$51/hr | \ud83d\udcc5 Deadline: 2027-01-09  \n   Skills: Pandas, Python, SQL, Statistics  \n\nThe first role offers slightly higher pay, while the second has a later deadline. Would you like to save either or explore remote options?",
+      "seconds": 93.4,
+      "arguments_ok": false,
+      "correct_strict": false
+    }
+  ],
+  "after_repair": [
+    {
+      "conversation": "A",
+      "message": "Find an internship in my city.",
+      "needed": [
+        "get_student_preferences",
+        "search_jobs"
+      ],
+      "called": [
+        "get_student_preferences",
+        "search_jobs"
+      ],
+      "calls": [
+        {
+          "name": "get_student_preferences",
+          "arguments": {},
+          "valid": true
+        },
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "category": "internship",
+            "city": "San Jose",
+            "min_salary": 25,
+            "remote": false,
+            "sort_by": "deadline"
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 2,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are 5 internships in San Jose matching your criteria (onsite, $25/hr+):\n\n1. **UX Design Intern** | Nova Campus Services | San Jose, CA | $41-$45/hr | Deadline: 2026-10-22  \n   Skills: Communication, Figma  \n\n2. **Cloud Engineering Intern** | Polaris Cloud Services | San Jose, CA | $38-$49/hr | Deadline: 2026-10-23  \n   Skills: Docker, Kubernetes, Linux  \n\n3. **Software Engineering Intern** | Keystone Analytics | San Jose, CA | $45-$56/hr | Deadline: 2026-11-06  \n   Skills: Java, SQL  \n\n4. **Data Analyst Intern** | Horizon EdTech | San Jose, CA | $49-$61/hr | Deadline: 2026-11-14  \n   Skills: Data Analysis, Excel, SQL, Tableau  \n\n5. **Machine Learning Intern** | Summit Storage Inc | San Jose, CA | $32-$43/hr | Deadline: 2026-11-14  \n   Skills: Machine Learning, Python, PyTorch  \n\nWould you like details about any of these?",
+      "seconds": 149.6,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "A",
+      "message": "Make it higher paying.",
+      "needed": [
+        "search_jobs"
+      ],
+      "called": [
+        "search_jobs"
+      ],
+      "calls": [
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "category": "internship",
+            "city": "San Jose",
+            "min_salary": 25,
+            "remote": false,
+            "sort_by": "salary_desc"
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are 5 higher-paying internships in San Jose (sorted by salary descending):\n\n1. **Data Analyst Intern** | Horizon EdTech | San Jose, CA | $49-$61/hr | Deadline: 2026-11-14  \n   Skills: Data Analysis, Excel, SQL, Tableau  \n\n2. **Hardware Test Intern** | Riverbend Consulting | San Jose, CA | $47-$60/hr | Deadline: 2027-01-16  \n   Skills: C++, CAD, Linux  \n\n3. **Software Engineering Intern** | Lakeside Insurance | San Jose, CA | $49-$58/hr | Deadline: 2027-01-01  \n   Skills: Python, SQL  \n\n4. **Data Analyst Intern** | Elm Street Bank | San Jose, CA | $49-$57/hr | Deadline: 2026-12-03  \n   Skills: Excel, SQL, Tableau  \n\n5. **Hardware Test Intern** | Meridian Hardware | San Jose, CA | $47-$57/hr | Deadline: 2026-12-22  \n   Skills: C++, CAD, Linux  \n\nWould you like details about any of these?",
+      "seconds": 164.2,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "A",
+      "message": "Tell me more about the first one.",
+      "needed": [
+        "get_job_details"
+      ],
+      "called": [
+        "get_job_details"
+      ],
+      "calls": [
+        {
+          "name": "get_job_details",
+          "arguments": {
+            "job_id": 155
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here\u2019s detailed info for the **Data Analyst Intern** at **Horizon EdTech** (job ID=155):\n\n---\n\n**Company**: Horizon EdTech  \n**Location**: San Jose, CA  \n**Category**: Internship  \n**Pay**: $49\u2013$61/hour  \n**Deadline**: 2026-11-14 (open until this date)  \n**Skills Required**: Data Analysis, Excel, SQL, Tableau  \n\n**Description**:  \nYou\u2019ll work on real projects with a mentor, focusing on data analysis using tools like Tableau, Excel, SQL, and data interpretation. Ideal for students looking to gain hands-on experience in educational technology.\n\n**About the Company**:  \nHorizon EdTech is an education technology company in San Jose that hires students and new graduates for internships and entry-level roles.\n\n**Contact**:  \nEmail: [careers@horizonedtech.example.com](mailto:careers@horizonedtech.example.com) | Phone: 408-555-1040  \n\n**Other Recent Postings by This Company**:  \n- Financial Analyst Intern (deadline: 2026-11-26)  \n- Frontend Developer Intern (deadline: 2026-12-09)  \n- Financial Analyst Intern (deadline: 2026-10-30)  \n\nWould you like to save this internship or explore other options?",
+      "seconds": 130.9,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "B",
+      "message": "Find a remote data science internship that matches my Python and SQL skills.",
+      "needed": [
+        "search_jobs"
+      ],
+      "called": [
+        "search_jobs"
+      ],
+      "calls": [
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "category": "internship",
+            "title": "data science",
+            "skills": [
+              "Python",
+              "SQL"
+            ],
+            "remote": true
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are 3 remote data science internships matching your Python/SQL skills:\n\n1. **Data Science Intern** | Copperline Networks | Remote | $48-$54/hr | Deadline: 2026-12-10  \n   Skills: Machine Learning, Python, SQL  \n\n2. **Data Science Intern** | Bayline Logistics | Remote | $33-$41/hr | Deadline: 2026-12-15  \n   Skills: Pandas, Python, SQL, Statistics  \n\n3. **Data Science Intern** | Evergreen Energy Tech | Remote | $43-$51/hr | Deadline: 2027-01-04  \n   Skills: Pandas, Python, Statistics  \n\nWould you like to save any of these?",
+      "seconds": 187.3,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "B",
+      "message": "What are the details of job 4?",
+      "needed": [
+        "get_job_details"
+      ],
+      "called": [
+        "get_job_details"
+      ],
+      "calls": [
+        {
+          "name": "get_job_details",
+          "arguments": {
+            "job_id": 4
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are the details for **job 4**:\n\n**Title:** Data Science Intern  \n**Company:** Copperline Networks (San Jose, CA)  \n**Location:** Remote  \n**Category:** Internship  \n**Pay:** $48\u2013$54/hr  \n**Deadline:** 2026-12-10  \n**Skills Required:** Machine Learning, Python, SQL  \n\n**Description:**  \nWork with SQL, Machine Learning, and Python on real projects with a mentor. Contact careers@copperlinenetworks.example.com for questions.  \n\n**About the Company:**  \nEducation technology company based in San Jose hiring students and new graduates.  \n\n**Contact:**  \nEmail: careers@copperlinenetworks.example.com | Phone: 408-555-1016  \n\n**Other Recent Postings by This Company:**  \n- UX Design Intern (id=78)  \n- Social Media Assistant (id=41)  \n- Campus Recreation Front Desk (id=100)  \n\nWould you like to save this job?",
+      "seconds": 123.6,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "B",
+      "message": "Show details for job 999999.",
+      "needed": [
+        "get_job_details"
+      ],
+      "called": [
+        "get_job_details"
+      ],
+      "calls": [
+        {
+          "name": "get_job_details",
+          "arguments": {
+            "job_id": 999999
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "The job with ID 999999 does not exist in our database. Did you mean one of the jobs listed earlier (e.g., job 4)? Let me know if you'd like details about a valid job ID or need help finding other opportunities!",
+      "seconds": 73.4,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "C",
+      "message": "Find an event for computer science students next month.",
+      "needed": [
+        "search_events"
+      ],
+      "called": [
+        "search_events"
+      ],
+      "calls": [
+        {
+          "name": "search_events",
+          "arguments": {
+            "date_from": "2026-11-01",
+            "date_to": "2026-11-30",
+            "major": "Computer Science",
+            "eligible_only": true
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are 5 events for Computer Science students next month:\n\n1. **Foxglove Health Cloud Computing Bootcamp**  \n   Nov 3, 2026 | Milpitas, CA  \n   Hands-on cloud deployment workshop (eligible: CS students)\n\n2. **Driftwood Design Studio Hackathon Kickoff**  \n   Nov 5, 2026 | Santa Clara, CA  \n   24-hour build with mentors (eligible: CS students)\n\n3. **Valley Health AI Cloud Computing Bootcamp**  \n   Nov 8, 2026 | San Jose, CA  \n   Cloud deployment workshop (eligible: CS students)\n\n4. **CircuitPath Semiconductors Resume Review**  \n   Nov 1, 2026 | San Jose, CA  \n   One-on-one feedback (open to all majors)\n\n5. **Brightpath Retail Resume Review**  \n   Nov 10, 2026 | San Jose, CA  \n   One-on-one feedback (open to all majors)\n\nWould you like to save any of these?",
+      "seconds": 98.5,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "C",
+      "message": "Any career fairs in Santa Clara?",
+      "needed": [
+        "search_events"
+      ],
+      "called": [
+        "search_events"
+      ],
+      "calls": [
+        {
+          "name": "search_events",
+          "arguments": {
+            "city": "Santa Clara",
+            "name": "career fair",
+            "date_from": "2026-11-01",
+            "date_to": "2026-11-30"
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are career fairs in Santa Clara next month:\n\n1. **Lumen Devices Bay Area Tech Career Fair**  \n   Nov 1, 2026 | Santa Clara University | All majors  \n   Meet tech recruiters hiring interns and new grads.\n\n2. **Pinecrest Security Bay Area Tech Career Fair**  \n   Nov 30, 2026 | Santa Clara University | All majors  \n   Meet tech recruiters hiring interns and new grads.\n\nWould you like to save either of these?",
+      "seconds": 111.0,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "C",
+      "message": "Are there any events for Finance students?",
+      "needed": [
+        "search_events"
+      ],
+      "called": [
+        "search_events"
+      ],
+      "calls": [
+        {
+          "name": "search_events",
+          "arguments": {
+            "date_to": "2026-11-30",
+            "eligible_only": true,
+            "major": "Finance",
+            "date_from": "2026-11-01"
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are events open to **Finance students** (no Finance-specific events found, but these are open to all majors):\n\n1. **CircuitPath Semiconductors Resume Review**  \n   Nov 1, 2026 | San Jose, CA | All majors  \n\n2. **Lumen Devices Tech Career Fair**  \n   Nov 1, 2026 | Santa Clara, CA | All majors  \n\n3. **Zephyr Drones Startup Pitch Night**  \n   Nov 2, 2026 | Santa Clara, CA | All majors  \n\n4. **Brightpath Retail Resume Review**  \n   Nov 10, 2026 | San Jose, CA | All majors  \n\n5. **Nova Campus Services Resume Review**  \n   Nov 11, 2026 | San Jose, CA | All majors  \n\nWould you like to save any of these?",
+      "seconds": 81.4,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "D",
+      "message": "Find me a marine biology job at SpaceX.",
+      "needed": [
+        "search_jobs"
+      ],
+      "called": [
+        "search_jobs"
+      ],
+      "calls": [
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "category": "internship",
+            "title": "marine biology",
+            "company": "SpaceX",
+            "limit": 5
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "There are no open marine biology jobs at SpaceX in the database. SpaceX does not currently have positions in marine biology across any job categories (full_time, part_time, etc.). Would you like to broaden your search to related fields like environmental science, aerospace engineering, or oceanography?",
+      "seconds": 45.5,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "E",
+      "message": "Find full-time data engineer jobs paying at least 120000 a year.",
+      "needed": [
+        "search_jobs"
+      ],
+      "called": [
+        "search_jobs"
+      ],
+      "calls": [
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "category": "full_time",
+            "title": "data engineer",
+            "min_salary": 120000,
+            "sort_by": "deadline",
+            "limit": 5
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are 5 full-time data engineer jobs paying at least $120,000/year:\n\n1. **Data Engineer** | Ridgeline Media Labs | Santa Clara, CA | $145k-$175k/yr | Deadline: 2026-11-07  \n   Skills: Kafka, Python, Spark, SQL  \n\n2. **Data Engineer** | Redwood Robotics | Milpitas, CA | $140k-$175k/yr | Deadline: 2026-11-25  \n   Skills: Python, SQL  \n\n3. **Data Engineer** | Northstar Payments | Milpitas, CA | $110k-$135k/yr | Deadline: 2026-12-01  \n   Skills: AWS, Python, Spark, SQL  \n\n4. **Data Engineer** | Kestrel Aerospace | Santa Clara, CA | $120k-$135k/yr | Deadline: 2026-12-11  \n   Skills: Kafka, Spark, SQL  \n\n5. **Data Engineer** | Sierra Sensor Co | Remote | $140k-$160k/yr | Deadline: 2026-12-24  \n   Skills: Python, SQL  \n\nWould you like to save any of these?",
+      "seconds": 137.4,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "F",
+      "message": "Find on-campus jobs in San Jose.",
+      "needed": [
+        "search_jobs"
+      ],
+      "called": [
+        "search_jobs"
+      ],
+      "calls": [
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "category": "on_campus",
+            "city": "San Jose",
+            "limit": 5
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are 5 on-campus jobs in San Jose:\n\n1. **Teaching Assistant - Data Structures** | Riverbend Consulting | $26-$33/hr | Deadline: 2026-10-26  \n   Skills: C++, Communication, Java  \n\n2. **Campus IT Help Desk Assistant** | Opal Commerce | $21-$25/hr | Deadline: 2026-10-30  \n   Skills: Customer Service, Linux  \n\n3. **Teaching Assistant - Data Structures** | TechNova Solutions | $24-$26/hr | Deadline: 2026-10-30  \n   Skills: C++, Communication, Java  \n\n4. **Campus IT Help Desk Assistant** | Northstar Payments | $22-$26/hr | Deadline: 2026-11-04  \n   Skills: Communication, Customer Service, Linux  \n\n5. **Teaching Assistant - Data Structures** | Riverbend Consulting | $21-$26/hr | Deadline: 2026-11-08  \n   Skills: C++, Communication, Java  \n\nLet me know if you'd like to refine the search!",
+      "seconds": 81.8,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "G",
+      "message": "Find part-time jobs that need customer service skills.",
+      "needed": [
+        "search_jobs"
+      ],
+      "called": [
+        "get_student_preferences",
+        "search_jobs"
+      ],
+      "calls": [
+        {
+          "name": "get_student_preferences",
+          "arguments": {},
+          "valid": true
+        },
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "category": "internship",
+            "city": "San Jose",
+            "skills": [
+              "customer service"
+            ],
+            "min_salary": 25,
+            "remote": false,
+            "limit": 5
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 2,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "No part-time jobs with customer service skills found in San Jose. Try loosening filters:  \n- Remove \"customer service\" skill  \n- Switch to part_time category  \n- Lower min_salary to $20  \n\nWould you like to adjust any filters?",
+      "seconds": 93.1,
+      "arguments_ok": false,
+      "correct_strict": false
+    },
+    {
+      "conversation": "H",
+      "message": "Which jobs at TechNova Solutions are open?",
+      "needed": [
+        "search_jobs"
+      ],
+      "called": [
+        "search_jobs"
+      ],
+      "calls": [
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "company": "TechNova",
+            "category": "full_time",
+            "limit": 5
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here's an open job at TechNova Solutions:\n\n1. **Junior Financial Analyst**  \n   - **Location:** Remote  \n   - **Pay:** $130,000-$150,000/yr  \n   - **Deadline:** 2026-12-07  \n   - **Skills Required:** Excel, Financial Modeling  \n\nWould you like details about this job or help applying?",
+      "seconds": 44.0,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "I",
+      "message": "What are my saved preferences?",
+      "needed": [
+        "get_student_preferences"
+      ],
+      "called": [
+        "get_student_preferences"
+      ],
+      "calls": [
+        {
+          "name": "get_student_preferences",
+          "arguments": {},
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Your saved preferences are:  \n- **Preferred city**: San Jose  \n- **Job category**: Internship  \n- **Minimum pay**: $25/hour  \n- **Work mode**: Onsite  \n- **Major (jobs)**: Computer Science  \n- **Major (events)**: Computer Science  \n- **Graduation year**: 2027  \n\nLet me know if you'd like to adjust any of these!",
+      "seconds": 45.1,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "J",
+      "message": "Find jobs that match my preferences.",
+      "needed": [
+        "get_student_preferences",
+        "search_jobs"
+      ],
+      "called": [
+        "get_student_preferences",
+        "search_jobs"
+      ],
+      "calls": [
+        {
+          "name": "get_student_preferences",
+          "arguments": {},
+          "valid": true
+        },
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "min_salary": 25,
+            "remote": false,
+            "limit": 5,
+            "sort_by": "deadline",
+            "category": "internship",
+            "city": "San Jose"
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 2,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are 5 internship opportunities in San Jose matching your preferences (Computer Science major, $25+/hr, onsite):\n\n1. **UX Design Intern** | Nova Campus Services | $41-$45/hr | Deadline: 2026-10-22  \n   Skills: Communication, Figma  \n\n2. **Cloud Engineering Intern** | Polaris Cloud Services | $38-$49/hr | Deadline: 2026-10-23  \n   Skills: Docker, Kubernetes, Linux  \n\n3. **Software Engineering Intern** | Keystone Analytics | $45-$56/hr | Deadline: 2026-11-06  \n   Skills: Java, SQL  \n\n4. **Data Analyst Intern** | Horizon EdTech | $49-$61/hr | Deadline: 2026-11-14  \n   Skills: Data Analysis, Excel, SQL, Tableau  \n\n5. **Machine Learning Intern** | Summit Storage Inc | $32-$43/hr | Deadline: 2026-11-14  \n   Skills: Python, PyTorch  \n\nWould you like to save any of these or refine the search further?",
+      "seconds": 167.5,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "K",
+      "message": "Find internships with deadlines after 2026-12-01.",
+      "needed": [
+        "search_jobs"
+      ],
+      "called": [
+        "get_student_preferences",
+        "search_jobs"
+      ],
+      "calls": [
+        {
+          "name": "get_student_preferences",
+          "arguments": {},
+          "valid": true
+        },
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "city": "San Jose",
+            "min_salary": 25,
+            "remote": false,
+            "deadline_after": "2026-12-01",
+            "sort_by": "deadline",
+            "limit": 5,
+            "category": "internship"
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 2,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are 5 internships matching your criteria (deadline after 2026-12-01, San Jose, $25/hr min, onsite, Computer Science):\n\n1. **Data Analyst Intern** | Elm Street Bank | San Jose, CA | $49\u2013$57/hr | Deadline: 2026-12-03  \n   Skills: Excel, SQL, Tableau  \n\n2. **Mechanical Design Intern** | Bayline Logistics | San Jose, CA | $24\u2013$35/hr | Deadline: 2026-12-04  \n   Skills: CAD, Excel  \n\n3. **Machine Learning Intern** | Cobalt DevTools | San Jose, CA | $42\u2013$53/hr | Deadline: 2026-12-06  \n   Skills: Python, PyTorch, TensorFlow  \n\n4. **Frontend Developer Intern** | Opal Commerce | San Jose, CA | $23\u2013$31/hr | Deadline: 2026-12-09  \n   Skills: Git, JavaScript  \n\n5. **Frontend Developer Intern** | Horizon EdTech | San Jose, CA | $43\u2013$49/hr | Deadline: 2026-12-09  \n   Skills: Figma, Git, React  \n\nWould you like to refine the search (e.g., higher pay, specific skills)?",
+      "seconds": 258.7,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "L",
+      "message": "Use the find_internships tool to get internships in Milpitas.",
+      "needed": [
+        "search_jobs"
+      ],
+      "called": [
+        "search_jobs"
+      ],
+      "calls": [
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "category": "internship",
+            "city": "Milpitas",
+            "limit": 5
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are 5 internships in Milpitas:\n\n1. **Frontend Developer Intern** | Copperline Networks | $22-$31/hr | Deadline: 2026-10-20  \n   Skills: Figma, Git, React  \n\n2. **Backend Developer Intern** | Mosaic Learning | $32-$45/hr | Deadline: 2026-10-21  \n   Skills: Docker, Python, SQL  \n\n3. **Financial Analyst Intern** | Trident Chips | $49-$56/hr | Deadline: 2026-10-22  \n   Skills: Excel, Financial Modeling, SQL  \n\n4. **Frontend Developer Intern** | Silicon Orchard Labs | $22-$32/hr | Deadline: 2026-10-23  \n   Skills: Git, JavaScript  \n\n5. **UX Design Intern** | Silicon Orchard Labs | $44-$58/hr | Deadline: 2026-10-26  \n   Skills: Communication, Figma  \n\nWould you like to save any of these or refine the search further?",
+      "seconds": 80.8,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "M",
+      "message": "Get job details for job number twelve.",
+      "needed": [
+        "get_job_details"
+      ],
+      "called": [
+        "get_job_details"
+      ],
+      "calls": [
+        {
+          "name": "get_job_details",
+          "arguments": {
+            "job_id": 12
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are the details for job #12:\n\n**Part-Time Web Developer**  \n**Company:** Cedar Peak Software (Milpitas, CA)  \n**Pay:** $25\u2013$31/hr  \n**Deadline:** 2027-01-15  \n**Skills Required:** JavaScript, Node.js, React  \n\n**Description:**  \nWork on real projects with React, Node.js, and JavaScript under a mentor's guidance. Open to students and new graduates.  \n\n**Contact:**  \nEmail: careers@cedarpeaksoftware.example.com | Phone: 408-555-1021  \n\n**Company Notes:**  \nCedar Peak Software is a data analytics firm in Milpitas. They also posted:  \n- Junior Financial Analyst (id=79)  \n- Data Engineer (id=96)  \n- Marketing Intern (id=37)  \n\nLet me know if you'd like to save this job or need help applying!",
+      "seconds": 64.8,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "N",
+      "message": "Find machine learning internships paying more than $40 an hour in Santa Clara.",
+      "needed": [
+        "search_jobs"
+      ],
+      "called": [
+        "search_jobs"
+      ],
+      "calls": [
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "sort_by": "salary_desc",
+            "limit": 5,
+            "category": "internship",
+            "title": "machine learning",
+            "city": "Santa Clara",
+            "min_salary": 40
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are 3 machine learning internships in Santa Clara paying above $40/hr:\n\n1. **ID 64**  \n   Machine Learning Intern | Ridgeline Media Labs | Santa Clara, CA | $51-$62/hr | Deadline: 2026-10-21 | Skills: Python, TensorFlow\n\n2. **ID 217**  \n   Machine Learning Intern | Quantum Leaf Systems | Santa Clara, CA | $48-$61/hr | Deadline: 2026-10-30 | Skills: Python, PyTorch, Machine Learning\n\n3. **ID 290**  \n   Machine Learning Intern | Evergreen Energy Tech | Santa Clara, CA | $49-$53/hr | Deadline: 2026-12-13 | Skills: PyTorch, Machine Learning\n\nWould you like to save any of these or refine the search further?",
+      "seconds": 117.4,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "O",
+      "message": "Search for events in Milpitas during the first half of next month.",
+      "needed": [
+        "search_events"
+      ],
+      "called": [
+        "search_events"
+      ],
+      "calls": [
+        {
+          "name": "search_events",
+          "arguments": {
+            "city": "Milpitas",
+            "date_from": "2026-11-01",
+            "date_to": "2026-11-15"
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 1,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are 2 events in Milpitas during November 1-15, 2026:\n\n1. **Lumen Devices Design Portfolio Review**  \n   Nov 1, 12:00 PM | Milpitas Community Center  \n   \ud83c\udf93 Eligible: Graphic Design students  \n   Summary: Designers review student portfolios and share hiring tips. Hosted by Lumen Devices.\n\n2. **Foxglove Health Cloud Computing Bootcamp**  \n   Nov 3, 10:30 AM | Milpitas Community Center  \n   \ud83c\udf93 Eligible: Computer Science students  \n   Summary: Hands-on session deploying a small service to the cloud. Hosted by Foxglove Health.\n\nLet me know if you'd like to save any of these or need more details!",
+      "seconds": 126.1,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "P",
+      "message": "Find hardware internships and then give me the full details of the best paying one.",
+      "needed": [
+        "get_job_details",
+        "search_jobs"
+      ],
+      "called": [
+        "get_student_preferences",
+        "search_jobs",
+        "search_jobs",
+        "get_job_details"
+      ],
+      "calls": [
+        {
+          "name": "get_student_preferences",
+          "arguments": {},
+          "valid": true
+        },
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "major": "Computer Science",
+            "category": "internship",
+            "city": "San Jose",
+            "min_salary": 25,
+            "remote": false,
+            "sort_by": "salary_desc"
+          },
+          "valid": false
+        },
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "city": "San Jose",
+            "min_salary": 25,
+            "remote": false,
+            "sort_by": "salary_desc",
+            "title": "hardware",
+            "category": "internship"
+          },
+          "valid": true
+        },
+        {
+          "name": "get_job_details",
+          "arguments": {
+            "job_id": 86
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 3,
+      "invalid_calls": 1,
+      "failures": [
+        {
+          "kind": "malformed_arguments",
+          "detail": "search_jobs {\"major\": \"Computer Science\", \"category\": \"internship\", \"city\": \"San Jose\", \"min_salary\": 25, \"remote\": false, \"sort_by\": \"salary_desc\"} -> unexpected argument 'major' for search_jobs. Allowed arguments: title, company, category, city, remote, min_salary, skills, deadline_after, sort_by, limit."
+        }
+      ],
+      "occurred": [
+        "malformed_arguments"
+      ],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 1,
+      "status": "final",
+      "answer": "Here are the full details for the top-paying hardware internship:\n\n**Job ID:** 86  \n**Title:** Hardware Test Intern  \n**Company:** Riverbend Consulting (San Jose, CA)  \n**Pay:** $47\u2013$60/hour  \n**Deadline:** January 16, 2027  \n**Skills Required:** C++, CAD, Linux  \n**Description:**  \nWork on real projects with CAD, C++, and Linux under a mentor's guidance. Ideal for Computer Science students seeking hands-on experience in hardware testing.  \n\n**Company Info:**  \nA fintech firm in San Jose hiring students and new grads. Recent postings include similar internships (see related jobs below).  \n\n**Contact:**  \nEmail: careers@riverbendconsulting.example.com | Phone: 408-555-1028  \n\n**Related Jobs from Riverbend Consulting:**  \n- Hardware Test Intern (Deadline: Oct 14, 2026)  \n- Hardware Test Intern (Deadline: Dec 26, 2026)  \n- Software Engineer (Deadline: Dec 20, 2026)  \n\nWould you like to save this job?",
+      "seconds": 182.7,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "Q",
+      "message": "Check my preferences, then find an upcoming event that fits my major.",
+      "needed": [
+        "get_student_preferences",
+        "search_events"
+      ],
+      "called": [
+        "get_student_preferences",
+        "search_events"
+      ],
+      "calls": [
+        {
+          "name": "get_student_preferences",
+          "arguments": {},
+          "valid": true
+        },
+        {
+          "name": "search_events",
+          "arguments": {
+            "major": "Computer Science",
+            "date_from": "2026-11-01",
+            "date_to": "2026-11-30",
+            "eligible_only": true
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 2,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are 5 relevant events for your **Computer Science** major in November 2026:\n\n1. **Foxglove Health Cloud Computing Bootcamp**  \n   \ud83d\udccd Santa Clara University Benson Center, Santa Clara, CA  \n   \ud83d\udcc5 2026-11-03 10:30  \n   \ud83d\udccc Eligible: CS students  \n   Summary: Hands-on cloud service deployment workshop.\n\n2. **Driftwood Design Studio Hackathon Kickoff**  \n   \ud83d\udccd Santa Clara University Benson Center, Santa Clara, CA  \n   \ud83d\udcc5 2026-11-05 16:30  \n   \ud83d\udccc Eligible: CS students  \n   Summary: 24-hour team build with mentors.\n\n3. **Valley Health AI Cloud Computing Bootcamp**  \n   \ud83d\udccd San Jose Convention Center, San Jose, CA  \n   \ud83d\udcc5 2026-11-08 14:30  \n   \ud83d\udccc Eligible: CS students  \n   Summary: Cloud service deployment workshop.\n\n4. **CircuitPath Semiconductors Resume Review Workshop**  \n   \ud83d\udccd SJSU Engineering Building, San Jose, CA  \n   \ud83d\udcc5 2026-11-01 10:00  \n   \ud83d\udccc Eligible: All majors  \n   Summary: One-on-one resume feedback.\n\n5. **Brightpath Retail Resume Review Workshop**  \n   \ud83d\udccd SJSU Engineering Building, San Jose, CA  \n   \ud83d\udcc5 2026-11-10 17:30  \n   \ud83d\udccc Eligible: All majors  \n   Summary: One-on-one resume feedback.\n\nWould you like to save any of these events?",
+      "seconds": 162.0,
+      "arguments_ok": true,
+      "correct_strict": true
+    },
+    {
+      "conversation": "R",
+      "message": "Find an internship in my city.",
+      "needed": [
+        "get_student_preferences"
+      ],
+      "called": [
+        "get_student_preferences",
+        "search_jobs"
+      ],
+      "calls": [
+        {
+          "name": "get_student_preferences",
+          "arguments": {},
+          "valid": true
+        },
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "city": "Santa Clara",
+            "category": "internship",
+            "title": "Data Science",
+            "limit": 5
+          },
+          "valid": true
+        }
+      ],
+      "valid_calls": 2,
+      "invalid_calls": 0,
+      "failures": [],
+      "occurred": [],
+      "unresolved": [],
+      "correct": true,
+      "repairs": 0,
+      "status": "final",
+      "answer": "Here are 2 internships in Santa Clara matching your profile (Data Science major):\n\n1. **Data Science Intern** | Lakeside Insurance  \n   \ud83d\udccd Santa Clara, CA | \ud83d\udcb5 $43-$49/hr | \ud83d\udcc5 Deadline: 2026-11-23  \n   Skills: Machine Learning, SQL, Statistics  \n\n2. **Data Science Intern** | Beacon Civic Tech  \n   \ud83d\udccd Santa Clara, CA | \ud83d\udcb5 $42-$51/hr | \ud83d\udcc5 Deadline: 2027-01-09  \n   Skills: Pandas, Python, SQL, Statistics  \n\nThe first role offers slightly higher pay, while the second has a later deadline. Would you like to save either or explore remote options?",
+      "seconds": 88.6,
+      "arguments_ok": false,
+      "correct_strict": false
+    }
+  ]
+}

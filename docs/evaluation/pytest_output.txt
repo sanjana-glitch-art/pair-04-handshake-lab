@@ -1,0 +1,49 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.12, pytest-8.4.2, pluggy-1.7.0 -- .venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/prags/Desktop/Agentic_Lab1/pair-04-handshake-lab/backend
+configfile: pytest.ini
+testpaths: tests
+plugins: anyio-4.15.1
+collecting ... collected 38 items
+
+tests/test_agent_loop.py::test_tool_results_are_appended_and_loop_ends_on_text PASSED [  2%]
+tests/test_agent_loop.py::test_history_is_sent_on_follow_up PASSED       [  5%]
+tests/test_agent_loop.py::test_iteration_ceiling_stops_safely PASSED     [  7%]
+tests/test_agent_loop.py::test_malformed_arguments_get_one_specific_repair PASSED [ 10%]
+tests/test_agent_loop.py::test_repairs_are_bounded_and_stop_cleanly PASSED [ 13%]
+tests/test_agent_loop.py::test_text_instead_of_tool_is_reprompted PASSED [ 15%]
+tests/test_agent_loop.py::test_lost_chain_is_reprompted PASSED           [ 18%]
+tests/test_agent_loop.py::test_no_preferences_is_not_a_lost_chain PASSED [ 21%]
+tests/test_agent_loop.py::test_repair_off_records_but_does_not_reprompt PASSED [ 23%]
+tests/test_agent_loop.py::test_declined_save_returns_cancellation_and_saves_nothing PASSED [ 26%]
+tests/test_agent_loop.py::test_approved_save_changes_state PASSED        [ 28%]
+tests/test_agent_loop.py::test_read_only_tools_are_never_gated PASSED    [ 31%]
+tests/test_agent_loop.py::test_tools_always_return_strings[get_job_details-arguments0] PASSED [ 34%]
+tests/test_agent_loop.py::test_tools_always_return_strings[get_job_details-arguments1] PASSED [ 36%]
+tests/test_agent_loop.py::test_tools_always_return_strings[get_job_details-arguments2] PASSED [ 39%]
+tests/test_agent_loop.py::test_tools_always_return_strings[search_jobs-arguments3] PASSED [ 42%]
+tests/test_agent_loop.py::test_tools_always_return_strings[search_jobs-arguments4] PASSED [ 44%]
+tests/test_agent_loop.py::test_tools_always_return_strings[search_events-arguments5] PASSED [ 47%]
+tests/test_agent_loop.py::test_tools_always_return_strings[save_job_or_event-arguments6] PASSED [ 50%]
+tests/test_agent_loop.py::test_tools_always_return_strings[save_job_or_event-arguments7] PASSED [ 52%]
+tests/test_agent_loop.py::test_tools_always_return_strings[no_such_tool-arguments8] PASSED [ 55%]
+tests/test_agent_loop.py::test_tools_always_return_strings[search_jobs-None] PASSED [ 57%]
+tests/test_agent_loop.py::test_defense_fences_and_neutralizes_database_text PASSED [ 60%]
+tests/test_agent_loop.py::test_text_tool_calls_are_parsed_or_flagged PASSED [ 63%]
+tests/test_api.py::test_login_rejects_wrong_password PASSED              [ 65%]
+tests/test_api.py::test_signup_validates_input PASSED                    [ 68%]
+tests/test_api.py::test_protected_routes_need_a_token PASSED             [ 71%]
+tests/test_api.py::test_roles_are_enforced PASSED                        [ 73%]
+tests/test_api.py::test_job_search_filters PASSED                        [ 76%]
+tests/test_api.py::test_job_details_and_missing_job PASSED               [ 78%]
+tests/test_api.py::test_application_status_filter PASSED                 [ 81%]
+tests/test_api.py::test_events_are_upcoming_and_sorted PASSED            [ 84%]
+tests/test_api.py::test_ineligible_registration_is_refused PASSED        [ 86%]
+tests/test_api.py::test_student_directory_filters PASSED                 [ 89%]
+tests/test_api.py::test_company_sees_only_its_own_applications PASSED    [ 92%]
+tests/test_api.py::test_status_update_validates_value PASSED             [ 94%]
+tests/test_api.py::test_event_registrations_are_owner_only PASSED        [ 97%]
+tests/test_api.py::test_picture_upload_rejects_non_images PASSED         [100%]
+
+============================== 38 passed in 0.73s ==============================

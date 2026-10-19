@@ -1,0 +1,1296 @@
+{
+  "info": {
+    "name": "Pair 4 Handshake API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Lab 1 API. Log in with the Auth requests and paste the tokens into the student_token / company_token variables."
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:9040"
+    },
+    {
+      "key": "student_token",
+      "value": ""
+    },
+    {
+      "key": "company_token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Student login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"demo.student@example.edu\",\n  \"password\": \"Pair4Demo!\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 sample",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ],
+                  "query": []
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"demo.student@example.edu\",\n  \"password\": \"Pair4Demo!\"\n}"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"access_token\": \"<jwt>\",\n  \"token_type\": \"bearer\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Company login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"demo.company@example.com\",\n  \"password\": \"Pair4Demo!\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 sample",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ],
+                  "query": []
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"demo.company@example.com\",\n  \"password\": \"Pair4Demo!\"\n}"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"access_token\": \"<jwt>\",\n  \"token_type\": \"bearer\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Students",
+      "item": [
+        {
+          "name": "My profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/students/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "students",
+                "me"
+              ],
+              "query": []
+            }
+          },
+          "response": [
+            {
+              "name": "200 sample",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{student_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/students/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "students",
+                    "me"
+                  ],
+                  "query": []
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"user_id\": 51,\n  \"email\": \"demo.student@example.edu\",\n  \"full_name\": \"Demo Student\",\n  \"date_of_birth\": \"2005-05-28\",\n  \"city\": \"San Jose\",\n  \"state\": \"CA\",\n  \"country\": \"USA\",\n  \"career_objective\": \"Computer Science student looking for hands-on experience in fintech.\",\n  \"college\": \"San Jose State University\",\n  \"degree\": \"M.S.\",\n  \"major\": \"Computer Science\",\n  \"graduation_year\": 2027,\n  \"cgpa\": 3.67,\n  \"experience\": \"Part-time retail associate for two years.\",\n  \"phone\": \"669-555-9812\",\n  \"profile_picture_path\": null,\n  \"skills\": [\n    \"Customer Service\",\n    \"Docker\",\n    \"Java\",\n    \"JavaScript\",\n    \"React\"\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Search students (company Students tab)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{company_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/students?college=San Jose State&skill=Python",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "students"
+              ],
+              "query": [
+                {
+                  "key": "college",
+                  "value": "San Jose State"
+                },
+                {
+                  "key": "skill",
+                  "value": "Python"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 sample",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{company_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/students?college=San Jose State&skill=Python",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "students"
+                  ],
+                  "query": [
+                    {
+                      "key": "college",
+                      "value": "San Jose State"
+                    },
+                    {
+                      "key": "skill",
+                      "value": "Python"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"user_id\": 209,\n    \"full_name\": \"Aisha Wilson\",\n    \"college\": \"San Jose State University\",\n    \"major\": \"Mechanical Engineering\",\n    \"degree\": \"M.S.\",\n    \"graduation_year\": 2027,\n    \"city\": \"Santa Clara\",\n    \"profile_picture_path\": null,\n    \"skills\": [\n      \"CAD\",\n      \"Excel\",\n      \"Python\"\n    ]\n  },\n  {\n    \"user_id\": 121,\n    \"full_name\": \"Andre Reddy\",\n    \"college\": \"San Jose State University\",\n    \"major\": \"Business Analytics\",\n    \"degree\": \"M.S.\",\n    \"graduation_year\": 2029,\n    \"city\": \"Milpitas\",\n    \"profile_picture_path\": null,\n    \"skills\": [\n      \"Communication\",\n      \"Data Analysis\",\n      \"Excel\",\n      \"Python\",\n      \"Tableau\"\n    ]\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Student public profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{company_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/students/52",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "students",
+                "52"
+              ],
+              "query": []
+            }
+          },
+          "response": [
+            {
+              "name": "200 sample",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{company_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/students/52",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "students",
+                    "52"
+                  ],
+                  "query": []
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"user_id\": 52,\n  \"full_name\": \"NoPrefs Student\",\n  \"college\": \"Santa Clara University\",\n  \"major\": \"Data Science\",\n  \"degree\": \"B.A.\",\n  \"graduation_year\": 2028,\n  \"city\": \"Santa Clara\",\n  \"profile_picture_path\": null,\n  \"skills\": [\n    \"Python\",\n    \"R\",\n    \"Spark\",\n    \"SQL\",\n    \"Tableau\"\n  ],\n  \"email\": \"noprefs.student@example.edu\",\n  \"state\": \"CA\",\n  \"country\": \"USA\",\n  \"career_objective\": \"Data Science student looking for hands-on experience in healthcare technology.\",\n  \"cgpa\": 3.48,\n  \"experience\": \"Research assistant in a campus lab.\",\n  \"phone\": \"669-555-7720\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Jobs",
+      "item": [
+        {
+          "name": "Search jobs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/jobs?search=Data&category=internship&city=San Jose",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "jobs"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "Data"
+                },
+                {
+                  "key": "category",
+                  "value": "internship"
+                },
+                {
+                  "key": "city",
+                  "value": "San Jose"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 sample",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/jobs?search=Data&category=internship&city=San Jose",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "jobs"
+                  ],
+                  "query": [
+                    {
+                      "key": "search",
+                      "value": "Data"
+                    },
+                    {
+                      "key": "category",
+                      "value": "internship"
+                    },
+                    {
+                      "key": "city",
+                      "value": "San Jose"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"id\": 155,\n    \"title\": \"Data Analyst Intern\",\n    \"company_name\": \"Horizon EdTech\",\n    \"location\": \"San Jose, CA\",\n    \"is_remote\": false,\n    \"salary_min\": 49.0,\n    \"salary_max\": 61.0,\n    \"category\": \"internship\",\n    \"deadline\": \"2026-11-14\"\n  },\n  {\n    \"id\": 177,\n    \"title\": \"Data Analyst Intern\",\n    \"company_name\": \"Quarry Construction Tech\",\n    \"location\": \"San Jose, CA\",\n    \"is_remote\": false,\n    \"salary_min\": 38.0,\n    \"salary_max\": 43.0,\n    \"category\": \"internship\",\n    \"deadline\": \"2026-11-20\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Job details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/jobs/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "jobs",
+                "1"
+              ],
+              "query": []
+            }
+          },
+          "response": [
+            {
+              "name": "200 sample",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/jobs/1",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "jobs",
+                    "1"
+                  ],
+                  "query": []
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 1,\n  \"title\": \"Data Science Intern\",\n  \"company_name\": \"Bayline Logistics\",\n  \"company_location\": \"Santa Clara, CA\",\n  \"company_description\": \"Bayline Logistics is a cybersecurity company based in Santa Clara that hires students and new graduates.\",\n  \"contact_email\": \"careers@baylinelogistics.example.com\",\n  \"contact_phone\": \"408-555-1011\",\n  \"posted_date\": \"2026-09-15\",\n  \"deadline\": \"2026-12-15\",\n  \"location\": \"Remote\",\n  \"is_remote\": true,\n  \"salary_min\": 33.0,\n  \"salary_max\": 41.0,\n  \"category\": \"internship\",\n  \"description\": \"Bayline Logistics is hiring a Data Science Intern (remote). You will work with Pandas, Python, Statistics, SQL on real projects with a mentor. Contact careers@baylinelogistics.example.com with questions.\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Applications",
+      "item": [
+        {
+          "name": "My applications (filter by status)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/applications/me?status=Pending",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "applications",
+                "me"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "Pending"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 sample",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{student_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/applications/me?status=Pending",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "applications",
+                    "me"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "Pending"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"id\": 3,\n    \"job_id\": 85,\n    \"job_title\": \"Social Media Assistant\",\n    \"company_name\": \"Mosaic Learning\",\n    \"resume_path\": \"uploads/seed_resume.pdf\",\n    \"applied_at\": \"2026-10-02T22:00:00\",\n    \"status\": \"Pending\"\n  },\n  {\n    \"id\": 2,\n    \"job_id\": 39,\n    \"job_title\": \"QA Engineer\",\n    \"company_name\": \"Mosaic Learning\",\n    \"resume_path\": \"uploads/seed_resume.pdf\",\n    \"applied_at\": \"2026-10-02T01:00:00\",\n    \"status\": \"Pending\"\n  }\n]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Events",
+      "item": [
+        {
+          "name": "Upcoming events",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/events?city=Milpitas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "events"
+              ],
+              "query": [
+                {
+                  "key": "city",
+                  "value": "Milpitas"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 sample",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{student_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/events?city=Milpitas",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "events"
+                  ],
+                  "query": [
+                    {
+                      "key": "city",
+                      "value": "Milpitas"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"id\": 17,\n    \"event_name\": \"Foxglove Health Resume Review Workshop\",\n    \"description\": \"Bring a printed resume and get one-on-one feedback from recruiters. Hosted by Foxglove Health.\",\n    \"event_date\": \"2026-10-19\",\n    \"event_time\": \"14:30:00\",\n    \"location\": \"Milpitas Community Center, Milpitas, CA\",\n    \"eligibility\": \"All majors\",\n    \"company_name\": \"Foxglove Health\",\n    \"is_eligible\": true,\n    \"is_registered\": false\n  },\n  {\n    \"id\": 101,\n    \"event_name\": \"Granite Data Systems Design Portfolio Review\",\n    \"description\": \"Designers review student portfolios and share hiring tips. Hosted by Granite Data Systems.\",\n    \"event_date\": \"2026-10-21\",\n    \"event_time\": \"10:30:00\",\n    \"location\": \"Milpitas Community Center, Milpitas, CA\",\n    \"eligibility\": \"Graphic Design students\",\n    \"company_name\": \"Granite Data Systems\",\n    \"is_eligible\": false,\n    \"is_registered\": false\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Event details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/events/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "events",
+                "1"
+              ],
+              "query": []
+            }
+          },
+          "response": [
+            {
+              "name": "200 sample",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{student_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/events/1",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "events",
+                    "1"
+                  ],
+                  "query": []
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 1,\n  \"event_name\": \"Alder Insights Mock Technical Interview Day\",\n  \"description\": \"Practice coding interviews with engineers and get written feedback. Hosted by Alder Insights.\",\n  \"event_date\": \"2026-11-19\",\n  \"event_time\": \"10:00:00\",\n  \"location\": \"Santa Clara Convention Center, Santa Clara, CA\",\n  \"eligibility\": \"Computer Science and Software Engineering students\",\n  \"company_name\": \"Alder Insights\",\n  \"is_eligible\": true,\n  \"is_registered\": false\n}"
+            }
+          ]
+        },
+        {
+          "name": "My registered events",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/events/registered",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "events",
+                "registered"
+              ],
+              "query": []
+            }
+          },
+          "response": [
+            {
+              "name": "200 sample",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{student_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/events/registered",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "events",
+                    "registered"
+                  ],
+                  "query": []
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"id\": 6,\n    \"event_id\": 105,\n    \"event_name\": \"Foxglove Health Resume Review Workshop\",\n    \"event_date\": \"2026-10-10\",\n    \"event_time\": \"18:00:00\",\n    \"location\": \"Milpitas Community Center, Milpitas, CA\",\n    \"registered_at\": \"2026-10-18T09:00:00\"\n  },\n  {\n    \"id\": 1,\n    \"event_id\": 28,\n    \"event_name\": \"Summit Storage Inc Cloud Computing Bootcamp\",\n    \"event_date\": \"2026-10-21\",\n    \"event_time\": \"12:30:00\",\n    \"location\": \"Santa Clara Convention Center, Santa Clara, CA\",\n    \"registered_at\": \"2026-10-18T09:00:00\"\n  }\n]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Preferences",
+      "item": [
+        {
+          "name": "My preferences",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/preferences/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "preferences",
+                "me"
+              ],
+              "query": []
+            }
+          },
+          "response": [
+            {
+              "name": "200 sample",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{student_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/preferences/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "preferences",
+                    "me"
+                  ],
+                  "query": []
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"student_id\": 51,\n  \"preferred_city\": \"San Jose\",\n  \"preferred_category\": \"internship\",\n  \"minimum_salary\": 25.0,\n  \"preferred_work_mode\": \"onsite\",\n  \"preferred_major\": \"Computer Science\",\n  \"preferred_event_major\": \"Computer Science\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Saved",
+      "item": [
+        {
+          "name": "My saved items",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/saved",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "saved"
+              ],
+              "query": []
+            }
+          },
+          "response": [
+            {
+              "name": "200 sample",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{student_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/saved",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "saved"
+                  ],
+                  "query": []
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Employer",
+      "item": [
+        {
+          "name": "My job postings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{company_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/employer/jobs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "employer",
+                "jobs"
+              ],
+              "query": []
+            }
+          },
+          "response": [
+            {
+              "name": "200 sample",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{company_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/employer/jobs",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "employer",
+                    "jobs"
+                  ],
+                  "query": []
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"id\": 90,\n    \"company_id\": 1,\n    \"title\": \"Frontend Developer Intern\",\n    \"posted_date\": \"2026-09-30\",\n    \"deadline\": \"2026-12-18\",\n    \"location\": \"Santa Clara, CA\",\n    \"is_remote\": false,\n    \"salary_min\": 41.0,\n    \"salary_max\": 54.0,\n    \"description\": \"TechNova Solutions is hiring a Frontend Developer Intern in Santa Clara. You will work with Git, JavaScript on real projects with a mentor. Contact careers@technovasolutions.example.com with questions.\",\n    \"category\": \"internship\"\n  },\n  {\n    \"id\": 140,\n    \"company_id\": 1,\n    \"title\": \"Campus Recreation Front Desk\",\n    \"posted_date\": \"2026-09-29\",\n    \"deadline\": \"2027-01-01\",\n    \"location\": \"San Jose, CA\",\n    \"is_remote\": false,\n    \"salary_min\": 21.0,\n    \"salary_max\": 28.0,\n    \"description\": \"TechNova Solutions is hiring a Campus Recreation Front Desk in San Jose. You will work with Customer Service, Communication on real projects with a mentor. Contact careers@technovasolutions.example.com with questions.\",\n    \"category\": \"on_campus\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Applicants (filter by status)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{company_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/employer/applications?status=Pending",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "employer",
+                "applications"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "Pending"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 sample",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{company_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/employer/applications?status=Pending",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "employer",
+                    "applications"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "Pending"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"application_id\": 1222,\n    \"job_id\": 198,\n    \"job_title\": \"Marketing Intern\",\n    \"student_id\": 214,\n    \"student_name\": \"Aarav Reddy\",\n    \"student_email\": \"aarav.reddy163@example.edu\",\n    \"resume_path\": \"uploads/seed_resume.pdf\",\n    \"applied_at\": \"2026-10-13T07:00:00\",\n    \"status\": \"Pending\"\n  },\n  {\n    \"application_id\": 1467,\n    \"job_id\": 208,\n    \"job_title\": \"Campus Recreation Front Desk\",\n    \"student_id\": 245,\n    \"student_name\": \"Tyler Tran\",\n    \"student_email\": \"tyler.tran194@example.edu\",\n    \"resume_path\": \"uploads/seed_resume.pdf\",\n    \"applied_at\": \"2026-10-11T02:00:00\",\n    \"status\": \"Pending\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "My events",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{company_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/employer/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "employer",
+                "events"
+              ],
+              "query": []
+            }
+          },
+          "response": [
+            {
+              "name": "200 sample",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{company_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/employer/events",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "employer",
+                    "events"
+                  ],
+                  "query": []
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"id\": 55,\n    \"company_id\": 1,\n    \"event_name\": \"TechNova Solutions Machine Learning Paper Reading Group\",\n    \"description\": \"Discuss a recent ML paper with the company research team. Hosted by TechNova Solutions.\",\n    \"event_date\": \"2026-10-09\",\n    \"event_time\": \"10:30:00\",\n    \"location\": \"San Jose Convention Center, San Jose, CA\",\n    \"eligibility\": \"Computer Science and Data Science students\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Company profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{company_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/employer/profile",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "employer",
+                "profile"
+              ],
+              "query": []
+            }
+          },
+          "response": [
+            {
+              "name": "200 sample",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{company_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/employer/profile",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "employer",
+                    "profile"
+                  ],
+                  "query": []
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"company_name\": \"TechNova Solutions\",\n  \"location\": \"San Jose, CA\",\n  \"description\": \"TechNova Solutions is a fintech company based in San Jose that hires students and new graduates.\",\n  \"contact_email\": \"careers@technovasolutions.example.com\",\n  \"contact_phone\": \"408-555-1001\",\n  \"user_id\": 1,\n  \"profile_picture_path\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Assistant",
+      "item": [
+        {
+          "name": "Chat with the assistant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/assistant/chat",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "assistant",
+                "chat"
+              ],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"What are my saved preferences?\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 sample",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{student_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/assistant/chat",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "assistant",
+                    "chat"
+                  ],
+                  "query": []
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"message\": \"What are my saved preferences?\"\n}"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"conversation_id\": \"da6c9e4327dc4236b4242f4bd9b75d0a\",\n  \"answer\": \"Your saved preferences are:  \\n- **Preferred city**: San Jose  \\n- **Job category**: Internship  \\n- **Minimum pay**: $25/hour  \\n- **Work mode**: Onsite  \\n- **Major (jobs)**: Computer Science  \\n- **Major (events)**: Computer Science  \\n- **Graduation year**: 2027  \\n\\nLet me know if you'd like to adjust any of these!\",\n  \"status\": \"final\",\n  \"tool_calls\": [\n    {\n      \"name\": \"get_student_preferences\",\n      \"arguments\": {},\n      \"result\": \"Saved preferences for the signed-in student:\\n- Preferred city: San Jose\\n- Preferred job category: internship\\n- Minimum pay: 25.0\\n- Work mode: onsite\\n- Major (for jobs): Computer Science\\n- Major (for events): Computer Science\\nProfile: city=San Jose, major=Computer Science, graduation year=2027.\",\n      \"valid\": true\n    }\n  ],\n  \"tool_call_count\": 1,\n  \"pending_action\": null\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

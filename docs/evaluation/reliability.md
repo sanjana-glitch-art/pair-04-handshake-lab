@@ -1,0 +1,47 @@
+# Tool-call reliability (Part C) — qwen3:8b, thinking on
+
+How turns are classified: a rejected call (malformed arguments or unknown tool) counts as unresolved only if no valid call followed it in the same turn. *Chain lost* means a request that needed two or more tools ended without the later ones. The repair path only detects one chain pattern at run time (preferences looked up, no search). A turn like "search, **then** give details of the best one" that stops after the search is counted here but cannot be repaired by the loop.
+
+24 assistant turns per run, same prompts in both runs (see `RELIABILITY_TURNS` in `backend/scripts/evaluate.py`). The repair path is the only difference between the two runs. Each cell is the number of turns that **ended** with that failure; in parentheses is the number of turns where it **occurred at any point**, including failures the repair path fixed.
+
+| Failure mode | Before repair | After repair | Example |
+|---|---|---|---|
+| Malformed arguments | 0 (1) | 0 (1) | "Find hardware internships and then give me the full details of the best paying one." → search_jobs {"min_salary": 25, "remote": false, "sort_by": "salary_desc", "major": "Computer Science", "category": "internship", "city": "San Jose"} - |
+| Unknown tool name | 0 (0) | 0 (0) | not observed |
+| Text where a call was required | 0 (0) | 0 (0) | not observed |
+| Chain lost after two or more steps | 0 (0) | 0 (0) | not observed |
+| *Well-formed but wrong filters* | 2 | 2 | "Find part-time jobs that need customer service skills." → {"min_salary": 25, "remote": false, "limit": 5, "category": "internship", "city": "San Jose", "skills": ["customer service"]} |
+| **Well-formed and correct** | **22 / 24** | **22 / 24** | every needed tool ran with valid arguments that match the request |
+
+**Before repair:** 32 valid tool calls, 1 rejected calls, 0 repair re-prompts, median 73 s per turn.
+
+**After repair:** 32 valid tool calls, 1 rejected calls, 1 repair re-prompts, median 117 s per turn.
+
+## Per-turn detail
+
+| # | Prompt | Calls before repair | Result | Calls after repair | Result |
+|---|---|---|---|---|---|
+| 1 | Find an internship in my city. | `get_student_preferences` {}<br>`search_jobs` {"category": "internship", "city": "San Jose", "min_salary": 25, "remote": false, "sort_by": "deadline"} | ok | `get_student_preferences` {}<br>`search_jobs` {"category": "internship", "city": "San Jose", "min_salary": 25, "remote": false, "sort_by": "deadline"} | ok |
+| 2 | Make it higher paying. | `search_jobs` {"category": "internship", "city": "San Jose", "min_salary": 25, "remote": false, "sort_by": "salary_desc"} | ok | `search_jobs` {"category": "internship", "city": "San Jose", "min_salary": 25, "remote": false, "sort_by": "salary_desc"} | ok |
+| 3 | Tell me more about the first one. | `get_job_details` {"job_id": 155} | ok | `get_job_details` {"job_id": 155} | ok |
+| 4 | Find a remote data science internship that matches my Python and SQL skills. | `search_jobs` {"category": "internship", "remote": true, "skills": ["Python", "SQL"], "title": "data science"} | ok | `search_jobs` {"category": "internship", "remote": true, "skills": ["Python", "SQL"], "title": "data science"} | ok |
+| 5 | What are the details of job 4? | `get_job_details` {"job_id": 4} | ok | `get_job_details` {"job_id": 4} | ok |
+| 6 | Show details for job 999999. | `get_job_details` {"job_id": 999999} | ok | `get_job_details` {"job_id": 999999} | ok |
+| 7 | Find an event for computer science students next month. | `search_events` {"date_from": "2026-11-01", "date_to": "2026-11-30", "eligible_only": true, "major": "Computer Science"} | ok | `search_events` {"date_from": "2026-11-01", "date_to": "2026-11-30", "eligible_only": true, "major": "Computer Science"} | ok |
+| 8 | Any career fairs in Santa Clara? | `search_events` {"city": "Santa Clara", "date_from": "2026-11-01", "date_to": "2026-11-30", "name": "career fair"} | ok | `search_events` {"city": "Santa Clara", "date_from": "2026-11-01", "date_to": "2026-11-30", "name": "career fair"} | ok |
+| 9 | Are there any events for Finance students? | `search_events` {"date_from": "2026-11-01", "date_to": "2026-11-30", "eligible_only": true, "major": "Finance"} | ok | `search_events` {"date_from": "2026-11-01", "date_to": "2026-11-30", "eligible_only": true, "major": "Finance"} | ok |
+| 10 | Find me a marine biology job at SpaceX. | `search_jobs` {"category": "internship", "company": "SpaceX", "limit": 5, "title": "marine biology"} | ok | `search_jobs` {"category": "internship", "company": "SpaceX", "limit": 5, "title": "marine biology"} | ok |
+| 11 | Find full-time data engineer jobs paying at least 120000 a year. | `search_jobs` {"category": "full_time", "limit": 5, "min_salary": 120000, "sort_by": "deadline", "title": "data engineer"} | ok | `search_jobs` {"category": "full_time", "limit": 5, "min_salary": 120000, "sort_by": "deadline", "title": "data engineer"} | ok |
+| 12 | Find on-campus jobs in San Jose. | `search_jobs` {"category": "on_campus", "city": "San Jose", "limit": 5} | ok | `search_jobs` {"category": "on_campus", "city": "San Jose", "limit": 5} | ok |
+| 13 | Find part-time jobs that need customer service skills. | `get_student_preferences` {}<br>`search_jobs` {"category": "internship", "city": "San Jose", "limit": 5, "min_salary": 25, "remote": false, "skills": ["customer service"]} | wrong filters | `get_student_preferences` {}<br>`search_jobs` {"category": "internship", "city": "San Jose", "limit": 5, "min_salary": 25, "remote": false, "skills": ["customer service"]} | wrong filters |
+| 14 | Which jobs at TechNova Solutions are open? | `search_jobs` {"category": "full_time", "company": "TechNova", "limit": 5} | ok | `search_jobs` {"category": "full_time", "company": "TechNova", "limit": 5} | ok |
+| 15 | What are my saved preferences? | `get_student_preferences` {} | ok | `get_student_preferences` {} | ok |
+| 16 | Find jobs that match my preferences. | `get_student_preferences` {}<br>`search_jobs` {"category": "internship", "city": "San Jose", "limit": 5, "min_salary": 25, "remote": false, "sort_by": "deadline"} | ok | `get_student_preferences` {}<br>`search_jobs` {"category": "internship", "city": "San Jose", "limit": 5, "min_salary": 25, "remote": false, "sort_by": "deadline"} | ok |
+| 17 | Find internships with deadlines after 2026-12-01. | `get_student_preferences` {}<br>`search_jobs` {"category": "internship", "city": "San Jose", "deadline_after": "2026-12-01", "limit": 5, "min_salary": 25, "remote": false, "sort_by": "deadline"} | ok | `get_student_preferences` {}<br>`search_jobs` {"category": "internship", "city": "San Jose", "deadline_after": "2026-12-01", "limit": 5, "min_salary": 25, "remote": false, "sort_by": "deadline"} | ok |
+| 18 | Use the find_internships tool to get internships in Milpitas. | `search_jobs` {"category": "internship", "city": "Milpitas", "limit": 5} | ok | `search_jobs` {"category": "internship", "city": "Milpitas", "limit": 5} | ok |
+| 19 | Get job details for job number twelve. | `get_job_details` {"job_id": 12} | ok | `get_job_details` {"job_id": 12} | ok |
+| 20 | Find machine learning internships paying more than $40 an hour in Santa Clara. | `search_jobs` {"category": "internship", "city": "Santa Clara", "limit": 5, "min_salary": 40, "sort_by": "salary_desc", "title": "machine learning"} | ok | `search_jobs` {"category": "internship", "city": "Santa Clara", "limit": 5, "min_salary": 40, "sort_by": "salary_desc", "title": "machine learning"} | ok |
+| 21 | Search for events in Milpitas during the first half of next month. | `search_events` {"city": "Milpitas", "date_from": "2026-11-01", "date_to": "2026-11-15"} | ok | `search_events` {"city": "Milpitas", "date_from": "2026-11-01", "date_to": "2026-11-15"} | ok |
+| 22 | Find hardware internships and then give me the full details of the best paying one. | `get_student_preferences` {}<br>`search_jobs` {"category": "internship", "city": "San Jose", "major": "Computer Science", "min_salary": 25, "remote": false, "sort_by": "salary_desc"} ✗<br>`search_jobs` {"category": "internship", "city": "San Jose", "min_salary": 25, "remote": false, "sort_by": "salary_desc", "title": "hardware"}<br>`get_job_details` {"job_id": 86} | ok (repaired) | `get_student_preferences` {}<br>`search_jobs` {"category": "internship", "city": "San Jose", "major": "Computer Science", "min_salary": 25, "remote": false, "sort_by": "salary_desc"} ✗<br>`search_jobs` {"category": "internship", "city": "San Jose", "min_salary": 25, "remote": false, "sort_by": "salary_desc", "title": "hardware"}<br>`get_job_details` {"job_id": 86} | ok (repaired) |
+| 23 | Check my preferences, then find an upcoming event that fits my major. | `get_student_preferences` {}<br>`search_events` {"date_from": "2026-11-01", "date_to": "2026-11-30", "eligible_only": true, "major": "Computer Science"} | ok | `get_student_preferences` {}<br>`search_events` {"date_from": "2026-11-01", "date_to": "2026-11-30", "eligible_only": true, "major": "Computer Science"} | ok |
+| 24 | Find an internship in my city. | `get_student_preferences` {}<br>`search_jobs` {"category": "internship", "city": "Santa Clara", "limit": 5, "title": "Data Science"} | wrong filters | `get_student_preferences` {}<br>`search_jobs` {"category": "internship", "city": "Santa Clara", "limit": 5, "title": "Data Science"} | wrong filters |

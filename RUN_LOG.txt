@@ -1,1 +1,162 @@
+RUN_LOG — Lab 1, Pair 04 (PAIR=4, PORT_BASE=9040, prefix p4, SEED=4)
+Machine: Apple M4, 16 GB, macOS (Darwin 24.6). Python 3.13, Node 25, Docker 29, Ollama 0.35.1.
+Commands are run from the repository root unless noted. Outputs are trimmed to the relevant lines.
 
+==============================================================================
+2026-10-18  Environment
+==============================================================================
+
+$ ollama list
+NAME            ID              SIZE      MODIFIED
+qwen3:8b        500a1f067a9f    5.2 GB    7 weeks ago
+
+$ docker run -d --name p4-mysql -e MYSQL_ROOT_PASSWORD=<local> -p 3307:3306 mysql:8.0 \
+      --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+$ docker exec p4-mysql mysqladmin -uroot -p<local> ping
+mysqld is alive
+
+$ file backend/requirements.txt            # before the fix
+backend/requirements.txt: Unicode text, UTF-16, little-endian text, with CRLF line terminators
+$ file backend/requirements.txt            # after converting and adding httpx, python-multipart
+backend/requirements.txt: ASCII text
+
+$ cd backend && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+$ .venv/bin/python -c "import fastapi, httpx, multipart, pymysql; print('deps ok', fastapi.__version__)"
+deps ok 0.141.1
+
+==============================================================================
+Schema and seed data
+==============================================================================
+
+# schema.sql created a table named `user` while every foreign key referenced
+# `users`; fixed before loading.
+
+$ backend/.venv/bin/python database/seed/generate_seed.py --reset
+Seeded p4_handshake with SEED=4, CITY_SET=['San Jose', 'Santa Clara', 'Milpitas'], anchor=2026-10-18
+  users                    250
+  company_profiles          50
+  student_profiles         200
+  skills                    30
+  student_skills           834
+  jobs                     320
+  job_skills               842
+  applications            1500
+  events                   110
+  event_registrations      600
+  student_preferences      140
+Every seeded account uses the password: Pair4Demo!
+
+# Determinism: checksum, reseed, checksum again.
+$ q="CHECKSUM TABLE jobs, applications, events, student_profiles, event_registrations, job_skills"
+$ a=$(mysql ... -e "$q"); generate_seed.py --reset; b=$(mysql ... -e "$q"); [ "$a" = "$b" ] && echo IDENTICAL
+IDENTICAL
+
+==============================================================================
+Backend smoke tests (uvicorn app.main:app --port 9040)
+==============================================================================
+
+$ curl -s localhost:9040/health/db
+{"status":"healthy","database":"connected"}
+
+$ curl "localhost:9040/jobs?category=internship&city=San%20Jose"          -> 33 San Jose internships (before the open-jobs default)
+$ curl "localhost:9040/jobs?category=bogus"                              -> 422 literal_error (full_time, part_time, on_campus, internship)
+$ curl -H "Authorization: Bearer <student>" "localhost:9040/students?skill=python&major=data"
+14 DS students w/ python ['Machine Learning', 'Pandas', 'Python', 'Spark', 'Tableau']
+$ curl -H "Authorization: Bearer <student>" localhost:9040/events       -> 89 upcoming; 54 eligible for the demo student
+$ curl -H "Authorization: Bearer <company>" .../employer/applications/1250/resume   -> 200 application/pdf
+$ curl -H "Authorization: Bearer <company>" .../employer/applications/1/resume      -> 404 (another company's job)
+$ curl -H "Authorization: Bearer <student>" .../employer/applications/1250/resume   -> 403 (student)
+$ curl -X PUT .../students/me -d '{"skills":["Python","SQL","react","Rust"],"cgpa":3.8}'
+skills now: ['Python', 'React', 'Rust', 'SQL'] cgpa 3.8
+$ curl -X PUT .../students/me -d '{"cgpa":7}'                            -> 422 less_than_equal 4
+$ curl -X POST .../events/<finance event>/register                       -> 403 "You are not eligible for this event. Eligibility: Finance and Business Analytics students"
+$ curl -X POST -F picture=@pixel.png .../students/me/picture             -> uploads/pictures/<uuid>.png, served with 200
+$ curl -X POST -F picture=@server.log .../students/me/picture            -> 400 "Profile picture must be a PNG or JPEG image."
+$ curl -X POST .../auth/signup  (valid)                                  -> {"id":251,"email":"signup.test@example.edu","user_role":"student"}
+$ curl -X POST .../auth/company/signup (valid)                           -> {"id":252,"email":"signup.co@example.com","user_role":"company"}
+$ curl -X POST .../auth/signup  (name "X", email "bad", password "short") -> 422 with field errors
+$ curl -X POST .../auth/token -d 'username=demo.student@example.edu&password=...'  -> {"access_token": ...}  (Swagger Authorize)
+$ curl localhost:9040/jobs                 -> 292 open jobs; first deadline 2026-10-19
+$ curl "localhost:9040/jobs?include_closed=true"  -> 320
+
+==============================================================================
+Frontend
+==============================================================================
+
+$ cd frontend && npm install && npx vite build
+✓ built in 396ms
+$ npx vite --port 5173
+# Checked in the browser as demo.student@example.edu and demo.company@example.com:
+# student directory + profile view, event eligibility buttons, profile skills save,
+# applications status filter, company resume preview (PDF renders), Students tab
+# skill search (6 students with Kafka), event registrants list.
+
+==============================================================================
+Automated tests
+==============================================================================
+
+$ cd backend && .venv/bin/python -m pytest -q
+......................................                                   [100%]
+38 passed in 1.32s
+(verbose list: docs/evaluation/pytest_output.txt)
+
+==============================================================================
+Assistant (Part B / C)
+==============================================================================
+
+$ curl -s localhost:11434/api/chat -d '{"model":"qwen3:8b","think":false,"tools":[search_jobs], ...
+    "messages":[{"role":"user","content":"Find remote data science internships"}]}'
+{"role":"assistant","tool_calls":[{"function":{"name":"search_jobs",
+  "arguments":{"remote":true,"title":"data science internships"}}}]}
+
+# First CLI run, reasoning off, before title matching was made word-based:
+$ printf 'Find an internship in my city\nquit\n' | backend/.venv/bin/python backend/scripts/assistant_cli.py
+[tool] get_student_preferences {}
+  [failure] malformed_arguments: search_jobs {... "work_mode": "onsite", ...} -> unexpected argument 'work_mode' ...
+[tool] search_jobs {...} -> REJECTED
+  [failure] malformed_arguments: search_jobs {... "major": "Computer Science", ...} -> unexpected argument 'major' ...
+[tool] search_jobs {...} -> REJECTED
+[tool] search_jobs {"category": "internship", "city": "San Jose", "limit": 5, "min_salary": 25, "sort_by": "deadline"}
+[assistant] tool calls this run: 4 (status: final)
+
+# Evaluation runs (all with: generate_seed.py --reset first).
+# Run 1 (reasoning off) was stopped after reading the transcripts: T3 invented
+#   name="career fair", city="San Francisco" and found nothing; T2 dropped the
+#   "data science" title. Fixed with parameter guidance, no-match hints, and
+#   qwen3 reasoning on (OLLAMA_THINK=true). Ollama's default num_ctx=4096 was
+#   also raised to 12288 after seeing it in `ollama ps`.
+$ backend/.venv/bin/python backend/scripts/evaluate.py transcripts
+  -> docs/evaluation/transcripts.md, console_log_transcripts.txt   (T1-T5 PASS, confirmation demo)
+# A first `evaluate.py all` crashed in the reliability stage with
+#   sqlalchemy.exc.TimeoutError: QueuePool limit of size 5 overflow 10 reached
+#   (each test conversation held a DB session open); fixed by closing finished sessions.
+$ backend/.venv/bin/python backend/scripts/evaluate.py reliability && backend/.venv/bin/python backend/scripts/score_reliability.py
+  -> docs/evaluation/reliability.md / .json
+# First injection run: the injected text was longer than the 160-character
+#   summary search results show, so the instructions never reached the model.
+#   Kept as docs/evaluation/injection_run1_truncated.md; the fixture was shortened
+#   to 147 characters and the run repeated.
+$ backend/.venv/bin/python backend/scripts/evaluate.py injection           # corrected fixture
+  -> docs/evaluation/injection.md / .json
+  defense off: top-recommendation wording 1/5, canary 1/5, leaked email 0/5
+  defense on:  top-recommendation wording 0/5, canary 0/5, leaked email 0/5
+$ backend/.venv/bin/python backend/scripts/evaluate.py reliability --no-think --tag nothink
+$ backend/.venv/bin/python backend/scripts/score_reliability.py [--tag nothink]
+  reasoning on : well-formed and correct 22/24 before repair, 22/24 after (1 re-prompts)
+  reasoning off: well-formed and correct 18/24 before repair, 19/24 after (6 re-prompts)
+
+==============================================================================
+API documentation, metrics, report
+==============================================================================
+
+$ backend/.venv/bin/python backend/scripts/export_api_docs.py
+200 POST /auth/login  ...  200 POST /assistant/chat     (18 requests, all 200)
+wrote docs/api  (openapi.json, pair4_handshake.postman_collection.json)
+$ backend/.venv/bin/python backend/scripts/write_metrics.py
+wrote METRICS.md
+$ backend/.venv/bin/python docs/report/build_report.py
+wrote docs/report/LabPair-04_Lab1_Report.pdf
+
+# Web assistant checked in the browser: answer with tool trace; "Save the second one"
+# paused with Yes / No; "No" -> "The job was not saved..." and saved_items stayed at 0.
+# An expired JWT now redirects to /login instead of showing a raw 401 error.
