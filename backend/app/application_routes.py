@@ -1,4 +1,6 @@
+from datetime import date
 from pathlib import Path
+from typing import Literal
 from uuid import uuid4
 from fastapi import (
     APIRouter,
@@ -6,6 +8,7 @@ from fastapi import (
     File,
     Form,
     HTTPException,
+    Query,
     UploadFile,
     status,
 )
@@ -56,6 +59,12 @@ async def submit_application(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Job not found.",
+        )
+
+    if job.deadline < date.today():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="The application deadline for this job has passed.",
         )
 
     existing_application = (
@@ -135,11 +144,16 @@ async def submit_application(
     response_model=list[ApplicationListItem],
 )
 def get_my_applications(
+    status_filter: Literal["Pending", "Reviewed", "Declined"] | None = Query(
+        default=None,
+        alias="status",
+    ),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
-    Returns all applications submitted by the logged-in student.
+    Returns all applications submitted by the logged-in student,
+    optionally filtered by status (Pending, Reviewed, Declined).
     """
 
     applications = (
@@ -157,7 +171,12 @@ def get_my_applications(
             Job.company_id == CompanyProfile.user_id,
         )
         .filter(
-            Application.student_id == current_user.id
+            Application.student_id == current_user.id,
+            *(
+                [Application.status == status_filter]
+                if status_filter
+                else []
+            ),
         )
         .order_by(
             Application.applied_at.desc()

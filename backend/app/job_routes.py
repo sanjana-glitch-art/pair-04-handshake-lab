@@ -1,3 +1,6 @@
+from datetime import date
+from typing import Literal
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
@@ -22,10 +25,11 @@ router = APIRouter(
 )
 def search_jobs(
     search: str | None = None,
-    category: str | None = None,
+    category: Literal["full_time", "part_time", "on_campus", "internship"] | None = None,
     city: str | None = None,
     remote: bool | None = None,
     min_salary: float | None = None,
+    include_closed: bool = False,
     db: Session = Depends(get_db),
 ):
     """
@@ -37,6 +41,7 @@ def search_jobs(
     - city: job location
     - remote: true or false
     - min_salary: minimum salary
+    - include_closed: also return jobs whose deadline has passed
     """
 
     query = (
@@ -46,6 +51,9 @@ def search_jobs(
             Job.company_id == CompanyProfile.user_id,
         )
     )
+
+    if not include_closed:
+        query = query.filter(Job.deadline >= date.today())
 
     if search:
         search_value = f"%{search}%"

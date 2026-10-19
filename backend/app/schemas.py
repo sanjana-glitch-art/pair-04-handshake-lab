@@ -70,6 +70,7 @@ class StudentProfileResponse(BaseModel):
     experience: str | None = None
     phone: str | None = None
     profile_picture_path: str | None = None
+    skills: list[str] = []
 
 class StudentProfileUpdate(BaseModel):
     email: EmailStr | None = None
@@ -79,17 +80,56 @@ class StudentProfileUpdate(BaseModel):
         max_length=150,
     )
     date_of_birth: date | None = None
+    city: str | None = Field(default=None, max_length=100)
+    state: str | None = Field(default=None, max_length=100)
+    country: str | None = Field(default=None, max_length=100)
+    career_objective: str | None = Field(default=None, max_length=2000)
+    college: str | None = Field(default=None, max_length=200)
+    degree: str | None = Field(default=None, max_length=150)
+    major: str | None = Field(default=None, max_length=150)
+    graduation_year: int | None = Field(default=None, ge=1950, le=2100)
+    cgpa: float | None = Field(default=None, ge=0, le=4)
+    experience: str | None = Field(default=None, max_length=5000)
+    phone: str | None = Field(
+        default=None,
+        max_length=30,
+        pattern=r"^[0-9+()\-. ]*$",
+    )
+
+    # Replaces the student's whole skill list when provided.
+    skills: list[str] | None = Field(default=None, max_length=50)
+
+
+class StudentDirectoryItem(BaseModel):
+    user_id: int
+    full_name: str
+    college: str | None = None
+    major: str | None = None
+    degree: str | None = None
+    graduation_year: int | None = None
     city: str | None = None
+    profile_picture_path: str | None = None
+    skills: list[str] = []
+
+
+class StudentPublicProfile(StudentDirectoryItem):
+    email: EmailStr
     state: str | None = None
     country: str | None = None
     career_objective: str | None = None
-    college: str | None = None
-    degree: str | None = None
-    major: str | None = None
-    graduation_year: int | None = None
     cgpa: float | None = None
     experience: str | None = None
     phone: str | None = None
+
+
+class EventRegistrantResponse(BaseModel):
+    registration_id: int
+    student_id: int
+    full_name: str
+    email: EmailStr
+    college: str | None = None
+    major: str | None = None
+    registered_at: datetime
 
 class JobSearchResult(BaseModel):
     id: int
@@ -227,6 +267,8 @@ class EventResponse(BaseModel):
     location: str
     eligibility: str | None = None
     company_name: str
+    is_eligible: bool | None = None
+    is_registered: bool | None = None
 
 class RegisteredEventResponse(BaseModel):
     id: int

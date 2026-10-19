@@ -70,7 +70,7 @@ def create_access_token(user_id: int, user_role: str) -> str:
     )
 
 oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="/auth/login"
+    tokenUrl="/auth/token"
 )
 
 
@@ -140,3 +140,36 @@ def require_company(
         )
 
     return current_user
+
+optional_oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="/auth/token",
+    auto_error=False,
+)
+
+
+def get_optional_user(
+    token: str | None = Depends(optional_oauth2_scheme),
+    db: Session = Depends(get_db),
+) -> User | None:
+    """
+    Returns the logged-in user when a valid token is sent, otherwise
+    None. Used by public pages that show extra detail when signed in.
+    """
+
+    if not token:
+        return None
+
+    try:
+        payload = jwt.decode(
+            token,
+            JWT_SECRET_KEY,
+            algorithms=[JWT_ALGORITHM],
+        )
+        user_id = payload.get("sub")
+    except JWTError:
+        return None
+
+    if user_id is None:
+        return None
+
+    return db.get(User, int(user_id))

@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from .auth_routes import router as auth_router
 from .database import get_db
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from .student_routes import router as student_router
 from .job_routes import router as job_router
 from .application_routes import router as application_router
@@ -14,6 +15,8 @@ from .employer_routes import router as employer_router
 from .employer_event_routes import router as employer_event_router
 from .employer_application_routes import router as employer_application_router
 from .employer_profile_routes import router as employer_profile_router
+from .saved_routes import router as saved_router
+from .uploads import PICTURE_DIR
 
 app = FastAPI(
     title="Pair 4 Handshake API",
@@ -32,6 +35,15 @@ app.include_router(employer_router)
 app.include_router(employer_event_router)
 app.include_router(employer_application_router)
 app.include_router(employer_profile_router)
+app.include_router(saved_router)
+
+# Profile pictures are public. Resumes stay under uploads/ but are only
+# reachable through the authorized resume preview endpoint.
+app.mount(
+    "/uploads/pictures",
+    StaticFiles(directory=PICTURE_DIR),
+    name="pictures",
+)
 
 app.add_middleware(
     CORSMiddleware,

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from .database import get_db
@@ -162,4 +163,24 @@ def login(
     return TokenResponse(
         access_token=token,
         token_type="bearer",
+    )
+
+
+@router.post(
+    "/token",
+    response_model=TokenResponse,
+    include_in_schema=False,
+)
+def login_for_swagger(
+    form: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db),
+):
+    """
+    Form-encoded login used by the Swagger UI "Authorize" button
+    (username = email). The app itself uses JSON /auth/login.
+    """
+
+    return login(
+        LoginRequest(email=form.username, password=form.password),
+        db,
     )
