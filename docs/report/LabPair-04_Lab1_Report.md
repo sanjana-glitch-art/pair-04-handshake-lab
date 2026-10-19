@@ -1,7 +1,9 @@
 ---
 title: "Lab 1 — Handshake Prototype with a Hand-Built AI Assistant"
 subtitle: "Distributed Systems for Data Engineering · Lab Pair 04"
-author: "Thummalapalli Sai Teja Sri Sanjana · Karthik Pragada"
+author:
+  - "Thummalapalli Sai Teja Sri Sanjana · Karthik Pragada"
+  - "GitHub repository: [github.com/sanjana-glitch-art/pair-04-handshake-lab](https://github.com/sanjana-glitch-art/pair-04-handshake-lab) (tag `lab1`)"
 date: "October 2026"
 geometry: margin=0.9in
 fontsize: 10pt

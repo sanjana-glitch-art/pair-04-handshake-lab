@@ -7,6 +7,8 @@ runs on a local Ollama model.
 
 Partners: Thummalapalli Sai Teja Sri Sanjana and Karthik Pragada.
 
+Repository: https://github.com/sanjana-glitch-art/pair-04-handshake-lab (Lab 1 submission: tag `lab1`)
+
 ## Pair parameters
 
 | Parameter | Value | Where it is used |
