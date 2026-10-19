@@ -231,7 +231,37 @@ built, so they match the submitted code.
 
 <!-- EVIDENCE -->
 
-# Appendix: Git commit history
+# Appendix A: Swagger UI endpoint details
+
+Expanded Swagger UI views (`http://127.0.0.1:9040/docs`) of the main
+endpoints for each persona and the AI assistant: parameters, request body
+example, and success response. Every endpoint can also return `422` with
+field-level validation errors, so that response is hidden here. The full
+schema is in `docs/api/openapi.json` and `docs/api/swagger.html`.
+
+![POST /auth/login: JSON credentials in, JWT out (used by the React app)](screenshots/api/01_auth_login.png){width=88%}
+
+![PUT /students/me: profile update with every editable field, including skills](screenshots/api/02_students_me_put.png){width=88%}
+
+![GET /students: student directory with name, college, major, and skill filters](screenshots/api/03_students_search.png){width=88%}
+
+![POST /applications: multipart upload of job_id and the PDF resume](screenshots/api/04_applications_post.png){width=88%}
+
+![POST /events/{event_id}/register: registration, refused when the student is not eligible](screenshots/api/05_events_register.png){width=88%}
+
+![POST /assistant/chat: one student message through the agent loop; returns tool calls and any pending confirmation](screenshots/api/06_assistant_chat.png){width=88%}
+
+![POST /assistant/confirm: the student approves or declines the paused save](screenshots/api/07_assistant_confirm.png){width=88%}
+
+![POST /employer/jobs: a company creates a job posting](screenshots/api/08_employer_jobs_post.png){width=88%}
+
+![PATCH /employer/applications/{application_id}/status: Pending, Reviewed, or Declined](screenshots/api/09_employer_application_status.png){width=88%}
+
+![GET /employer/applications/{application_id}/resume: inline PDF preview, owning company only](screenshots/api/10_employer_application_resume.png){width=88%}
+
+![GET /employer/events/{event_id}/registrations: students registered for a company's event](screenshots/api/11_employer_event_registrations.png){width=88%}
+
+# Appendix B: Git commit history
 
 Commit history of `main` in
 `github.com/sanjana-glitch-art/pair-04-handshake-lab`, showing commits by

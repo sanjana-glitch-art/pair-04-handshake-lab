@@ -269,6 +269,7 @@ def build():
             "-V", "monofont=Menlo",
             "-V", "tables=true",
             "--toc",
+            "--toc-depth=2",
         ],
         check=True,
     )
