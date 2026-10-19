@@ -204,14 +204,28 @@ export function updateMyPreferences(preferenceData) {
   });
 }
 
-export function chatWithAssistant(message, history = []) {
+export function chatWithAssistant(message, conversationId = null) {
   return request("/assistant/chat", {
     method: "POST",
     body: JSON.stringify({
       message,
-      history,
+      conversation_id: conversationId,
     }),
   });
+}
+
+export function confirmAssistantAction(conversationId, approved) {
+  return request("/assistant/confirm", {
+    method: "POST",
+    body: JSON.stringify({
+      conversation_id: conversationId,
+      approved,
+    }),
+  });
+}
+
+export function getSavedItems() {
+  return request("/saved");
 }
 
 export function getEmployerJobs() {

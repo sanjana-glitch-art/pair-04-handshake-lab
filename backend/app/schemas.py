@@ -314,21 +314,41 @@ class StudentPreferenceResponse(BaseModel):
     preferred_major: str | None = None
     preferred_event_major: str | None = None
 
-class AssistantMessage(BaseModel):
-    role: Literal["user", "assistant"]
-    content: str
-
 class AssistantRequest(BaseModel):
     message: str = Field(
         min_length=1,
         max_length=1000,
     )
 
-    history: list[AssistantMessage] = []
+    # Omit to start a new conversation; send the id back for follow-ups.
+    conversation_id: str | None = Field(default=None, max_length=64)
+
+
+class AssistantConfirmRequest(BaseModel):
+    conversation_id: str = Field(min_length=1, max_length=64)
+    approved: bool
+
+
+class AssistantToolCall(BaseModel):
+    name: str
+    arguments: dict | None = None
+    result: str
+    valid: bool
+
+
+class AssistantPendingAction(BaseModel):
+    tool_name: str
+    arguments: dict
+    description: str
+
 
 class AssistantResponse(BaseModel):
+    conversation_id: str
     answer: str
-    trace: list[dict] = []
+    status: str
+    tool_calls: list[AssistantToolCall] = []
+    tool_call_count: int = 0
+    pending_action: AssistantPendingAction | None = None
 
 class EmployerEventCreate(BaseModel):
     event_name: str = Field(
