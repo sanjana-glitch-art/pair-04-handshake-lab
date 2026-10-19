@@ -1,15 +1,69 @@
 from datetime import date, datetime, time
 from sqlalchemy import (
+    Column,
     Date,
     DateTime,
     ForeignKey,
     String,
+    Table,
     Text,
     Time,
     func,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .database import Base
+
+
+# Many-to-many link tables. They have no columns of their own,
+# so plain Table objects are enough.
+student_skills = Table(
+    "student_skills",
+    Base.metadata,
+    Column(
+        "student_id",
+        ForeignKey("student_profiles.user_id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    Column(
+        "skill_id",
+        ForeignKey("skills.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+)
+
+job_skills = Table(
+    "job_skills",
+    Base.metadata,
+    Column(
+        "job_id",
+        ForeignKey("jobs.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    Column(
+        "skill_id",
+        ForeignKey("skills.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+)
+
+
+class Skill(Base):
+    """
+    One reusable skill such as Python or SQL.
+    """
+
+    __tablename__ = "skills"
+
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    skill_name: Mapped[str] = mapped_column(
+        String(100),
+        unique=True,
+        nullable=False,
+    )
 
 class User(Base):
     """
@@ -153,6 +207,11 @@ class StudentProfile(Base):
         back_populates="student_profile",
     )
 
+    skills: Mapped[list[Skill]] = relationship(
+        secondary=student_skills,
+        order_by=Skill.skill_name,
+    )
+
 class CompanyProfile(Base):
     """
     Represents one company profile.
@@ -272,11 +331,19 @@ class Job(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
+        server_default=func.current_timestamp(),
     )
 
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
+        server_default=func.current_timestamp(),
+        onupdate=func.current_timestamp(),
+    )
+
+    skills: Mapped[list[Skill]] = relationship(
+        secondary=job_skills,
+        order_by=Skill.skill_name,
     )
 
 class Application(Base):
@@ -477,4 +544,42 @@ class StudentPreference(Base):
         nullable=False,
         server_default=func.current_timestamp(),
         onupdate=func.current_timestamp(),
+    )
+
+class SavedItem(Base):
+    """
+    A job or event a student saved, usually through the assistant.
+
+    item_id points at jobs.id or events.id depending on item_type,
+    so it has no database-level foreign key.
+    """
+
+    __tablename__ = "saved_items"
+
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    student_id: Mapped[int] = mapped_column(
+        ForeignKey(
+            "student_profiles.user_id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
+
+    item_type: Mapped[str] = mapped_column(
+        String(10),
+        nullable=False,
+    )
+
+    item_id: Mapped[int] = mapped_column(
+        nullable=False,
+    )
+
+    saved_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+        server_default=func.current_timestamp(),
     )
