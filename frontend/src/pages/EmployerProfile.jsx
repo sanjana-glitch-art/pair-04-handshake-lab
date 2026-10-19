@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import {
   getEmployerProfile,
   updateEmployerProfile,
+  uploadEmployerPicture,
+  uploadUrl,
 } from "../services/api.js";
 
 const emptyProfile = {
@@ -18,6 +20,8 @@ function EmployerProfile() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [picturePath, setPicturePath] = useState("");
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     loadProfile();
@@ -34,6 +38,7 @@ function EmployerProfile() {
         contact_email: data.contact_email || "",
         contact_phone: data.contact_phone || "",
       });
+      setPicturePath(data.profile_picture_path || "");
     } catch (err) {
       setError(err.message || "Unable to load profile.");
     } finally {
@@ -55,12 +60,42 @@ function EmployerProfile() {
     setMessage("");
 
     try {
-      await updateEmployerProfile(profile);
+      // Blank optional fields are sent as null so validation accepts them.
+      await updateEmployerProfile({
+        ...profile,
+        location: profile.location || null,
+        description: profile.description || null,
+        contact_email: profile.contact_email || null,
+        contact_phone: profile.contact_phone || null,
+      });
       setMessage("Company profile updated successfully.");
     } catch (err) {
       setError(err.message || "Unable to update profile.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handlePictureChange(event) {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    setUploading(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const updated = await uploadEmployerPicture(file);
+      setPicturePath(updated.profile_picture_path || "");
+      setMessage("Company picture updated.");
+    } catch (err) {
+      setError(err.message || "Unable to upload picture.");
+    } finally {
+      setUploading(false);
+      event.target.value = "";
     }
   }
 
@@ -100,6 +135,40 @@ function EmployerProfile() {
 
       <div className="card shadow-sm">
         <div className="card-body">
+          <div className="d-flex align-items-center gap-3 mb-4">
+            {picturePath ? (
+              <img
+                src={uploadUrl(picturePath)}
+                alt="Company"
+                className="rounded border"
+                width="80"
+                height="80"
+                style={{ objectFit: "cover" }}
+              />
+            ) : (
+              <div
+                className="rounded bg-primary-subtle d-flex align-items-center justify-content-center fs-3"
+                style={{ width: 80, height: 80 }}
+              >
+                {(profile.company_name || "?").charAt(0).toUpperCase()}
+              </div>
+            )}
+
+            <div>
+              <label className="btn btn-outline-primary btn-sm mb-1">
+                {uploading ? "Uploading..." : "Change picture"}
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg"
+                  hidden
+                  onChange={handlePictureChange}
+                  disabled={uploading}
+                />
+              </label>
+              <div className="small text-muted">PNG or JPEG, up to 2 MB.</div>
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit}>
             <div className="mb-3">
               <label className="form-label">

@@ -1,10 +1,70 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
+  getEventRegistrations,
   getEmployerEvents,
   createEmployerEvent,
   updateEmployerEvent,
   deleteEmployerEvent,
 } from "../services/api.js";
+
+// Lazily loads the students registered for one event.
+function EventRegistrants({ eventId }) {
+  const [open, setOpen] = useState(false);
+  const [registrants, setRegistrants] = useState(null);
+  const [error, setError] = useState("");
+
+  async function toggle() {
+    const next = !open;
+    setOpen(next);
+
+    if (next && registrants === null) {
+      try {
+        setRegistrants(await getEventRegistrations(eventId));
+      } catch (err) {
+        setError(err.message || "Unable to load registrations.");
+      }
+    }
+  }
+
+  return (
+    <div className="mt-3">
+      <button
+        type="button"
+        className="btn btn-link btn-sm p-0"
+        onClick={toggle}
+      >
+        {open ? "Hide registered students" : "View registered students"}
+      </button>
+
+      {open && (
+        <div className="mt-2">
+          {error && <div className="text-danger small">{error}</div>}
+          {registrants === null && !error && (
+            <div className="small text-muted">Loading...</div>
+          )}
+          {registrants?.length === 0 && (
+            <div className="small text-muted">No students registered yet.</div>
+          )}
+          {registrants?.length > 0 && (
+            <ul className="list-unstyled small mb-0">
+              {registrants.map((student) => (
+                <li key={student.registration_id}>
+                  <Link to={`/employer/students/${student.student_id}`}>
+                    {student.full_name}
+                  </Link>{" "}
+                  <span className="text-muted">
+                    · {student.major || "major n/a"} · {student.college || ""}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const emptyForm = {
   event_name: "",
@@ -259,6 +319,11 @@ function EmployerEvents() {
                     {event.location}
                   </p>
 
+                  <p>
+                    <strong>Eligibility:</strong>{" "}
+                    {event.eligibility || "Open to all students"}
+                  </p>
+
                   <button
                     className="btn btn-outline-primary btn-sm me-2"
                     onClick={() => startEditing(event)}
@@ -272,6 +337,8 @@ function EmployerEvents() {
                   >
                     Delete
                   </button>
+
+                  <EventRegistrants eventId={event.id} />
                 </div>
               </div>
             </div>

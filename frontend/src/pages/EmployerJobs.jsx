@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   getEmployerJobs,
   createEmployerJob,
@@ -409,11 +410,18 @@ function EmployerJobs() {
 
                   <button
                     type="button"
-                    className="btn btn-outline-danger btn-sm"
+                    className="btn btn-outline-danger btn-sm me-2"
                     onClick={() => handleDelete(job.id)}
                   >
                     Delete
                   </button>
+
+                  <Link
+                    to={`/employer/applications?job=${job.id}`}
+                    className="btn btn-primary btn-sm"
+                  >
+                    View applicants
+                  </Link>
                 </div>
               </div>
             </div>

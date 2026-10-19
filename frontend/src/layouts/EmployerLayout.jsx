@@ -58,6 +58,14 @@ function EmployerLayout() {
             <span className="sidebar-icon">✓</span>
             Applications
           </NavLink>
+
+          <NavLink
+            to="/employer/students"
+            className={linkClass}
+          >
+            <span className="sidebar-icon">☺</span>
+            Students
+          </NavLink>
         </nav>
 
         <NavLink
