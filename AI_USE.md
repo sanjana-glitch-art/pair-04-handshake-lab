@@ -1,12 +1,5 @@
 # AI use
 
-The lab allows AI assistants if each partner documents how they used them,
-shows one incorrect output, explains how it was detected, and documents the
-fix. (This file is about the coding assistants we used to build the
-project, not the Ollama-based career assistant inside the app.)
-
-## Karthik Pragada
-
 **Assistant used:** Claude Code (Anthropic, model Claude Opus 5.5) in the
 Claude desktop app, working in a local clone of this repository.
 
