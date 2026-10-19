@@ -6,14 +6,14 @@ Pair-specific configuration:
     Seed: 4
     Backend port: 9040 */
 
-CREATE DATABASE p4_handshake
+CREATE DATABASE IF NOT EXISTS p4_handshake
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_unicode_ci; -- utf8mb4 supports normal text, emojis and international characters.
 
 USE p4_handshake;
 
 -- USERS table - stores information for both students and companies. 
-CREATE TABLE IF NOT EXISTS user (
+CREATE TABLE IF NOT EXISTS users (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS student_profiles (
 
     -- if the user account is deleted, the connected student profile is automatically deleted too
     CONSTRAINT fk_student_user
-        FOREIGN KEY (user_id) REFERENCES user(id)
+        FOREIGN KEY (user_id) REFERENCES users(id)
         ON DELETE CASCADE
 );
 
@@ -255,19 +255,10 @@ CREATE TABLE IF NOT EXISTS student_preferences (
         ON DELETE CASCADE
 );
 
-SHOW TABLES;
-
-SELECT DATABASE();
-
-USE p4_handshake;
-
-SELECT * FROM users;
-
-
-
-
-USE p4_handshake;
-
+/*
+    SAVED_ITEMS TABLE - Jobs and events a student saved, usually through
+    the AI assistant's save_job_or_event tool (gated by confirm_action).
+*/
 CREATE TABLE IF NOT EXISTS saved_items (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 
@@ -287,13 +278,3 @@ CREATE TABLE IF NOT EXISTS saved_items (
     CONSTRAINT unique_saved_item
         UNIQUE (student_id, item_type, item_id)
 );
-
-SHOW TABLES;
-
-
-USE p4_handshake;
-
-SELECT *
-FROM saved_items;
-
-
