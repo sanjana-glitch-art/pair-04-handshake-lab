@@ -263,9 +263,13 @@ schema is in `docs/api/openapi.json` and `docs/api/swagger.html`.
 
 # Appendix B: Git commit history
 
-Commit history of `main` in
-`github.com/sanjana-glitch-art/pair-04-handshake-lab`, showing commits by
-both partners (Thummalapalli Sai Teja Sri Sanjana as `sanjana-glitch-art`,
-Karthik Pragada as `prags8585`).
+Commit history of `main` in `github.com/sanjana-glitch-art/pair-04-handshake-lab`
+(38 commits), showing work by both partners: Thummalapalli Sai Teja Sri
+Sanjana as `sanjana-glitch-art` and Karthik Pragada as `prags8585`. GitHub
+shows 35 commits per page, so the three oldest commits are on its second page.
 
-![Git commit history of main](screenshots/git_commit_history.jpg){height=85%}
+![Commits on Oct 19, 2026 (newest first)](screenshots/git_history_1_oct19.png){width=95%}
+
+![Commits from Oct 18 back to Sep 18, 2026](screenshots/git_history_2_oct18_sep18.png){width=95%}
+
+![The three oldest commits (GitHub page 2)](screenshots/git_history_3_oldest.png){width=95%}
