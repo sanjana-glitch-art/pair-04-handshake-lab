@@ -1,10 +1,11 @@
-from pydantic import BaseModel, ConfigDict
-from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
 from .database import get_db
 from .models import CompanyProfile, User
 from .security import require_company
+from .uploads import remove_upload, save_profile_picture
 
 
 router = APIRouter(
@@ -14,11 +15,15 @@ router = APIRouter(
 
 
 class EmployerProfileUpdate(BaseModel):
-    company_name: str
-    location: str | None = None
-    description: str | None = None
-    contact_email: str | None = None
-    contact_phone: str | None = None
+    company_name: str = Field(min_length=2, max_length=200)
+    location: str | None = Field(default=None, max_length=200)
+    description: str | None = Field(default=None, max_length=5000)
+    contact_email: EmailStr | None = None
+    contact_phone: str | None = Field(
+        default=None,
+        max_length=30,
+        pattern=r"^[0-9+()\-. ]*$",
+    )
 
 
 class EmployerProfileResponse(EmployerProfileUpdate):
@@ -81,5 +86,32 @@ def update_my_employer_profile(
 
     db.commit()
     db.refresh(profile)
+
+    return profile
+
+
+@router.post(
+    "/profile/picture",
+    response_model=EmployerProfileResponse,
+)
+async def upload_my_employer_picture(
+    picture: UploadFile = File(...),
+    current_user: User = Depends(require_company),
+    db: Session = Depends(get_db),
+):
+    """
+    Uploads or replaces the company logo / profile picture.
+    """
+
+    profile = get_company_profile(current_user, db)
+
+    new_path = await save_profile_picture(picture)
+    old_path = profile.profile_picture_path
+
+    profile.profile_picture_path = new_path
+    db.commit()
+    db.refresh(profile)
+
+    remove_upload(old_path)
 
     return profile

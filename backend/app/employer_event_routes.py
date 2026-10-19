@@ -2,11 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from .database import get_db
-from .models import Event, User
+from .models import Event, EventRegistration, StudentProfile, User
 from .schemas import (
     EmployerEventCreate,
     EmployerEventResponse,
     EmployerEventUpdate,
+    EventRegistrantResponse,
 )
 from .security import require_company
 
@@ -182,3 +183,63 @@ def delete_my_event(
     db.commit()
 
     return None
+
+
+@router.get(
+    "/events/{event_id}/registrations",
+    response_model=list[EventRegistrantResponse],
+)
+def get_event_registrations(
+    event_id: int,
+    current_user: User = Depends(require_company),
+    db: Session = Depends(get_db),
+):
+    """
+    Lists the students registered for one of the company's events.
+    """
+
+    event = (
+        db.query(Event)
+        .filter(
+            Event.id == event_id,
+            Event.company_id == current_user.id,
+        )
+        .first()
+    )
+
+    if not event:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=(
+                "Event not found or does not belong "
+                "to your company."
+            ),
+        )
+
+    rows = (
+        db.query(EventRegistration, StudentProfile, User.email)
+        .join(
+            StudentProfile,
+            EventRegistration.student_id == StudentProfile.user_id,
+        )
+        .join(
+            User,
+            StudentProfile.user_id == User.id,
+        )
+        .filter(EventRegistration.event_id == event_id)
+        .order_by(EventRegistration.registered_at.asc())
+        .all()
+    )
+
+    return [
+        EventRegistrantResponse(
+            registration_id=registration.id,
+            student_id=profile.user_id,
+            full_name=profile.full_name,
+            email=email,
+            college=profile.college,
+            major=profile.major,
+            registered_at=registration.registered_at,
+        )
+        for registration, profile, email in rows
+    ]

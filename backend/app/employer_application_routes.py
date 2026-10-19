@@ -1,4 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import Literal
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from .database import get_db
@@ -13,6 +16,7 @@ from .schemas import (
     EmployerApplicationStatusUpdate,
 )
 from .security import require_company
+from .uploads import BASE_DIR, UPLOAD_DIR
 
 
 router = APIRouter(
@@ -26,15 +30,23 @@ router = APIRouter(
     response_model=list[EmployerApplicationResponse],
 )
 def get_applications_for_my_jobs(
+    job_id: int | None = None,
+    status_filter: Literal["Pending", "Reviewed", "Declined"] | None = Query(
+        default=None,
+        alias="status",
+    ),
     current_user: User = Depends(require_company),
     db: Session = Depends(get_db),
 ):
     """
     Returns applications submitted to jobs owned by
     the logged-in company.
+
+    - job_id: only applicants for this posting
+    - status: Pending, Reviewed, or Declined
     """
 
-    rows = (
+    query = (
         db.query(
             Application,
             Job.title,
@@ -56,6 +68,16 @@ def get_applications_for_my_jobs(
         .filter(
             Job.company_id == current_user.id,
         )
+    )
+
+    if job_id is not None:
+        query = query.filter(Application.job_id == job_id)
+
+    if status_filter is not None:
+        query = query.filter(Application.status == status_filter)
+
+    rows = (
+        query
         .order_by(
             Application.applied_at.desc(),
         )
@@ -197,4 +219,55 @@ def update_application_status(
         application_id=application_id,
         current_user=current_user,
         db=db,
+    )
+
+
+@router.get(
+    "/applications/{application_id}/resume",
+    response_class=FileResponse,
+)
+def preview_application_resume(
+    application_id: int,
+    current_user: User = Depends(require_company),
+    db: Session = Depends(get_db),
+):
+    """
+    Streams the applicant's PDF resume inline so the company can
+    preview it. Only the company that owns the job can open it.
+    """
+
+    application = (
+        db.query(Application)
+        .join(
+            Job,
+            Application.job_id == Job.id,
+        )
+        .filter(
+            Application.id == application_id,
+            Job.company_id == current_user.id,
+        )
+        .first()
+    )
+
+    if not application:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=(
+                "Application not found or it does not belong "
+                "to one of your jobs."
+            ),
+        )
+
+    resume_file = (BASE_DIR / application.resume_path).resolve()
+
+    if UPLOAD_DIR.resolve() not in resume_file.parents or not resume_file.is_file():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Resume file is missing.",
+        )
+
+    return FileResponse(
+        resume_file,
+        media_type="application/pdf",
+        headers={"Content-Disposition": "inline"},
     )
