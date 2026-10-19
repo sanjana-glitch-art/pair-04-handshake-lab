@@ -200,3 +200,12 @@ built, so they match the submitted code.
 # 9. Assistant tool-call evidence
 
 <!-- EVIDENCE -->
+
+# Appendix: Git commit history
+
+Commit history of `main` in
+`github.com/sanjana-glitch-art/pair-04-handshake-lab`, showing commits by
+both partners (Thummalapalli Sai Teja Sri Sanjana as `sanjana-glitch-art`,
+Karthik Pragada as `prags8585`).
+
+![Git commit history of main](screenshots/git_commit_history.jpg){height=85%}
