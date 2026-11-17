@@ -390,7 +390,7 @@ def terminal() -> str:
 
 def git_history() -> str:
     def git(*args):
-        return subprocess.run(["git", "-C", str(REPO), *args], capture_output=True, text=True).stdout.strip()
+        return subprocess.run(["git", "-C", str(REPO), *args], capture_output=True, text=True).stdout.rstrip()
 
     log = git("log", "--format=%h  %ad  %an  %s", "--date=short", "lab1..HEAD")
     authors = git("shortlog", "-sn", "HEAD")
