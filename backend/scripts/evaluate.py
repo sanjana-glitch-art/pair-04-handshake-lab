@@ -35,7 +35,6 @@ import inject_posting  # noqa: E402
 
 from app.assistant import AssistantSettings, OllamaModelClient, ToolContext, run_assistant  # noqa: E402
 from app.assistant.agent import CHAIN_LOST, MALFORMED, TEXT_INSTEAD_OF_TOOL, UNKNOWN_TOOL  # noqa: E402
-from app.models import CompanyProfile, SavedItem  # noqa: E402
 
 
 OUT_DIR = REPO_ROOT / "docs" / "evaluation"
@@ -273,8 +272,7 @@ def confirmation_demo(client):
 
     session = Session(client, DEMO, ask=scripted_ask)
     db = session.db
-    db.query(SavedItem).filter(SavedItem.student_id == session.ctx.student_id).delete()
-    db.commit()
+    db.saved_items.delete_many({"student_id": session.ctx.student_id})
 
     parts = ["## Confirmation gate (Part C)", "",
              "`save_job_or_event` is gated by `confirm_action` in `backend/app/assistant/confirm.py`. "
@@ -288,7 +286,7 @@ def confirmation_demo(client):
         run, log, _ = session.send(message)
         parts.append(markdown_run(message, message, run, log))
 
-    saved = db.query(SavedItem).filter(SavedItem.student_id == session.ctx.student_id).all()
+    saved = list(db.saved_items.find({"student_id": session.ctx.student_id}))
     parts += [
         f"Confirmation prompts shown: {len(asked)} · "
         f"saved items afterwards: {[(s.item_type, s.item_id) for s in saved]}",
@@ -582,7 +580,7 @@ def main():
     THINK_LABEL[0] = "on" if client.think else "off"
 
     db = SessionLocal()
-    COMPANY_NAMES_FOR_CHECK.extend(name for (name,) in db.query(CompanyProfile.company_name).all() if name != "Apex Growth Labs")
+    COMPANY_NAMES_FOR_CHECK.extend(c["company_name"] for c in db.company_profiles.find({}, {"company_name": 1}) if c["company_name"] != "Apex Growth Labs")
     db.close()
 
     global SUFFIX

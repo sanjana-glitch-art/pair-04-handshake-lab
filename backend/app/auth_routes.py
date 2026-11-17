@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
+from pymongo.database import Database
+from pymongo.errors import DuplicateKeyError
 
-from .database import get_db
-from .models import CompanyProfile, StudentProfile, User
+from .database import get_db, log_activity, next_id, utcnow
 from .schemas import (
     CompanySignupRequest,
     LoginRequest,
@@ -12,175 +12,132 @@ from .schemas import (
     UserResponse,
 )
 from .security import (
-    create_access_token,
+    CurrentUser,
+    create_session,
+    get_current_user,
     hash_password,
     verify_password,
 )
 
 
-router = APIRouter(
-    prefix="/auth",
-    tags=["Authentication"],
-)
+router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
-@router.post(
-    "/signup",
-    response_model=UserResponse,
-    status_code=status.HTTP_201_CREATED,
-)
-def student_signup(
-    request: SignupRequest,
-    db: Session = Depends(get_db),
-):
+def _create_user(db: Database, email: str, password: str, role: str) -> dict:
+    if db.users.find_one({"email": email}, {"_id": 1}):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="An account with this email already exists.",
+        )
+
+    now = utcnow()
+    user = {
+        "_id": next_id(db, "users"),
+        "email": email,
+        "password_hash": hash_password(password),
+        "user_role": role,
+        "created_at": now,
+        "updated_at": now,
+    }
+
+    try:
+        db.users.insert_one(user)
+    except DuplicateKeyError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="An account with this email already exists.",
+        )
+
+    return user
+
+
+def _user_response(user: dict) -> dict:
+    return {"id": user["_id"], "email": user["email"], "user_role": user["user_role"]}
+
+
+@router.post("/signup", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+def student_signup(request: SignupRequest, db: Database = Depends(get_db)):
     """
     Creates a student account and student profile.
     """
 
-    normalized_email = request.email.lower()
+    user = _create_user(db, request.email.lower(), request.password, "student")
+    now = utcnow()
 
-    existing_user = (
-        db.query(User)
-        .filter(User.email == normalized_email)
-        .first()
-    )
+    db.student_profiles.insert_one({
+        "_id": user["_id"],
+        "full_name": request.full_name,
+        "college": request.college,
+        "skills": [],
+        "created_at": now,
+        "updated_at": now,
+    })
+    log_activity(db, user["_id"], "signup", {"role": "student"})
 
-    if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="An account with this email already exists.",
-        )
-
-    new_user = User(
-        email=normalized_email,
-        password_hash=hash_password(request.password),
-        user_role="student",
-    )
-
-    db.add(new_user)
-    db.flush()
-
-    new_profile = StudentProfile(
-        user_id=new_user.id,
-        full_name=request.full_name,
-        college=request.college,
-    )
-
-    db.add(new_profile)
-    db.commit()
-    db.refresh(new_user)
-
-    return new_user
+    return _user_response(user)
 
 
-@router.post(
-    "/company/signup",
-    response_model=UserResponse,
-    status_code=status.HTTP_201_CREATED,
-)
-def company_signup(
-    request: CompanySignupRequest,
-    db: Session = Depends(get_db),
-):
+@router.post("/company/signup", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+def company_signup(request: CompanySignupRequest, db: Database = Depends(get_db)):
     """
     Creates a company account and company profile.
     """
 
-    normalized_email = request.email.lower()
+    user = _create_user(db, request.email.lower(), request.password, "company")
+    now = utcnow()
 
-    existing_user = (
-        db.query(User)
-        .filter(User.email == normalized_email)
-        .first()
-    )
+    db.company_profiles.insert_one({
+        "_id": user["_id"],
+        "company_name": request.company_name,
+        "location": request.location,
+        "description": request.description,
+        "contact_email": request.contact_email,
+        "contact_phone": request.contact_phone,
+        "profile_picture_path": None,
+        "created_at": now,
+        "updated_at": now,
+    })
+    log_activity(db, user["_id"], "signup", {"role": "company"})
 
-    if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="An account with this email already exists.",
-        )
-
-    new_user = User(
-        email=normalized_email,
-        password_hash=hash_password(request.password),
-        user_role="company",
-    )
-
-    db.add(new_user)
-    db.flush()
-
-    new_company_profile = CompanyProfile(
-        user_id=new_user.id,
-        company_name=request.company_name,
-        location=request.location,
-        description=request.description,
-        contact_email=request.contact_email,
-        contact_phone=request.contact_phone,
-    )
-
-    db.add(new_company_profile)
-    db.commit()
-    db.refresh(new_user)
-
-    return new_user
+    return _user_response(user)
 
 
-@router.post(
-    "/login",
-    response_model=TokenResponse,
-)
-def login(
-    request: LoginRequest,
-    db: Session = Depends(get_db),
-):
+@router.post("/login", response_model=TokenResponse)
+def login(request: LoginRequest, db: Database = Depends(get_db)):
     """
-    Logs in either a student or a company.
-    The JWT contains the user's role.
+    Signs in a student or company. The JWT carries the role and a
+    server-side session id that expires.
     """
 
-    normalized_email = request.email.lower()
+    user = db.users.find_one({"email": request.email.lower()})
 
-    user = (
-        db.query(User)
-        .filter(User.email == normalized_email)
-        .first()
-    )
-
-    if not user or not verify_password(
-        request.password,
-        user.password_hash,
-    ):
+    if not user or not verify_password(request.password, user["password_hash"]):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password.",
         )
 
-    token = create_access_token(
-        user_id=user.id,
-        user_role=user.user_role,
-    )
+    token = create_session(db, user["_id"], user["user_role"])
+    log_activity(db, user["_id"], "login")
 
-    return TokenResponse(
-        access_token=token,
-        token_type="bearer",
-    )
+    return TokenResponse(access_token=token, token_type="bearer")
 
 
-@router.post(
-    "/token",
-    response_model=TokenResponse,
-    include_in_schema=False,
-)
-def login_for_swagger(
-    form: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db),
-):
+@router.post("/token", response_model=TokenResponse, include_in_schema=False)
+def login_for_swagger(form: OAuth2PasswordRequestForm = Depends(), db: Database = Depends(get_db)):
     """
-    Form-encoded login used by the Swagger UI "Authorize" button
-    (username = email). The app itself uses JSON /auth/login.
+    Form-encoded login used by the Swagger UI "Authorize" button.
     """
 
-    return login(
-        LoginRequest(email=form.username, password=form.password),
-        db,
-    )
+    return login(LoginRequest(email=form.username, password=form.password), db)
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+def logout(current_user: CurrentUser = Depends(get_current_user), db: Database = Depends(get_db)):
+    """
+    Ends the server-side session, so the token stops working at once.
+    """
+
+    if current_user.session_id:
+        db.sessions.delete_one({"_id": current_user.session_id})
+    log_activity(db, current_user.id, "logout")

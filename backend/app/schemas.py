@@ -342,6 +342,16 @@ class AssistantPendingAction(BaseModel):
     description: str
 
 
+class AssistantUsage(BaseModel):
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    total_tokens: int = 0
+    context_window: int = 0
+    context_percent: float = 0.0
+    warning: bool = False
+    model_calls: int = 0
+
+
 class AssistantResponse(BaseModel):
     conversation_id: str
     answer: str
@@ -349,6 +359,16 @@ class AssistantResponse(BaseModel):
     tool_calls: list[AssistantToolCall] = []
     tool_call_count: int = 0
     pending_action: AssistantPendingAction | None = None
+    usage: AssistantUsage | None = None
+    trace_id: str | None = None
+    compaction: dict | None = None
+    elapsed_ms: float | None = None
+
+
+class AssistantHistoryResponse(BaseModel):
+    conversation_id: str
+    messages: list[dict]
+    usage: AssistantUsage | None = None
 
 class EmployerEventCreate(BaseModel):
     event_name: str = Field(

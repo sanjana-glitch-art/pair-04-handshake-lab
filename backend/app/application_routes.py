@@ -1,198 +1,156 @@
-from datetime import date
-from pathlib import Path
+"""
+Student application endpoints.
+
+Submitting or withdrawing an application is asynchronous: the API
+validates the request, stores the resume in GridFS, publishes
+application.created / application.updated to Kafka, and answers
+202 Accepted. The application worker writes the database.
+"""
+
 from typing import Literal
-from uuid import uuid4
-from fastapi import (
-    APIRouter,
-    Depends,
-    File,
-    Form,
-    HTTPException,
-    Query,
-    UploadFile,
-    status,
-)
-from sqlalchemy.orm import Session
+
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+from pymongo.database import Database
+
+from . import messaging
+from .database import get_db, next_id, today_iso
 from .schemas import ApplicationListItem
-from .database import get_db
-from .models import Application, Job, User, CompanyProfile
-from .security import get_current_user
+from .security import CurrentUser, get_current_user, require_student
+from .uploads import remove_upload, store_resume, validate_resume
 
-router = APIRouter(
-    prefix="/applications",
-    tags=["Student Applications"],
-)
 
-BASE_DIR = Path(__file__).resolve().parents[1]
-UPLOAD_DIR = BASE_DIR / "uploads"
-UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+router = APIRouter(prefix="/applications", tags=["Student Applications"])
 
-MAX_FILE_SIZE = 5 * 1024 * 1024
 
-@router.post(
-    "",
-    status_code=status.HTTP_201_CREATED,
-)
+@router.post("", status_code=status.HTTP_202_ACCEPTED)
 async def submit_application(
     job_id: int = Form(...),
     resume: UploadFile = File(...),
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+    db: Database = Depends(get_db),
 ):
     """
-    Allows a logged-in student to apply for a job with a PDF resume.
+    Applies to a job with a PDF resume. The application is queued on
+    Kafka (application.created) and stored by the application worker.
     """
 
     if current_user.user_role != "student":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only students can apply for jobs.",
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only students can apply for jobs.")
 
-    job = (
-        db.query(Job)
-        .filter(Job.id == job_id)
-        .first()
-    )
-
+    job = db.jobs.find_one({"_id": job_id}, {"deadline": 1, "title": 1})
     if job is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Job not found.",
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found.")
+    if job["deadline"] < today_iso():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="The application deadline for this job has passed.")
+    if db.applications.find_one({"student_id": current_user.id, "job_id": job_id}, {"_id": 1}):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="You have already applied to this job.")
 
-    if job.deadline < date.today():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The application deadline for this job has passed.",
-        )
-
-    existing_application = (
-        db.query(Application)
-        .filter(
-            Application.student_id == current_user.id,
-            Application.job_id == job_id,
-        )
-        .first()
-    )
-
-    if existing_application is not None:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="You have already applied to this job.",
-        )
-
-    original_filename = resume.filename or ""
-
-    if not original_filename.lower().endswith(".pdf"):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Only PDF resumes are allowed.",
-        )
-
-    file_contents = await resume.read()
-
-    if len(file_contents) > MAX_FILE_SIZE:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Resume file must be smaller than 5 MB.",
-        )
-
-    if not file_contents.startswith(b"%PDF"):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The uploaded file is not a valid PDF.",
-        )
-
-    saved_filename = f"{uuid4().hex}.pdf"
-    saved_path = UPLOAD_DIR / saved_filename
-
-    saved_path.write_bytes(file_contents)
-
-    application = Application(
-        student_id=current_user.id,
-        job_id=job_id,
-        resume_path=f"uploads/{saved_filename}",
-        status="Pending",
-    )
+    contents = await resume.read()
+    validate_resume(resume.filename, contents)
+    resume_path = store_resume(contents, resume.filename, current_user.id)
+    application_id = next_id(db, "applications")
 
     try:
-        db.add(application)
-        db.commit()
-        db.refresh(application)
-
-    except Exception:
-        db.rollback()
-
-        if saved_path.exists():
-            saved_path.unlink()
-
+        message = messaging.publish(
+            messaging.APPLICATION_CREATED,
+            # Same key for the same student+job keeps retries on one partition, in order.
+            key=f"{current_user.id}:{job_id}",
+            payload={
+                "application_id": application_id,
+                "student_id": current_user.id,
+                "job_id": job_id,
+                "resume_path": resume_path,
+            },
+        )
+    except messaging.PublishError:
+        remove_upload(resume_path)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Unable to save application.",
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Applications are temporarily unavailable. Please try again.",
         )
 
     return {
         "message": "Application submitted successfully.",
-        "application_id": application.id,
-        "job_id": application.job_id,
-        "status": application.status,
+        "application_id": application_id,
+        "job_id": job_id,
+        "status": "Pending",
+        "event_id": message["event_id"],
+        "trace_id": message["trace_id"],
     }
 
-@router.get(
-    "/me",
-    response_model=list[ApplicationListItem],
-)
-def get_my_applications(
-    status_filter: Literal["Pending", "Reviewed", "Declined"] | None = Query(
-        default=None,
-        alias="status",
-    ),
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+
+@router.post("/{application_id}/withdraw", status_code=status.HTTP_202_ACCEPTED)
+def withdraw_application(
+    application_id: int,
+    current_user: CurrentUser = Depends(require_student),
+    db: Database = Depends(get_db),
 ):
     """
-    Returns all applications submitted by the logged-in student,
-    optionally filtered by status (Pending, Reviewed, Declined).
+    Withdraws one of the student's own applications (application.updated).
     """
 
-    applications = (
-        db.query(
-            Application,
-            Job.title,
-            CompanyProfile.company_name,
+    application = db.applications.find_one({"_id": application_id, "student_id": current_user.id})
+    if application is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Application not found.")
+
+    message = messaging.publish(
+        messaging.APPLICATION_UPDATED,
+        key=f"{current_user.id}:{application['job_id']}",
+        payload={"application_id": application_id, "student_id": current_user.id, "status": "Withdrawn"},
+    )
+
+    return {"message": "Withdrawal received.", "application_id": application_id, "event_id": message["event_id"]}
+
+
+@router.get("/me", response_model=list[ApplicationListItem])
+def get_my_applications(
+    status_filter: Literal["Pending", "Reviewed", "Declined", "Withdrawn"] | None = Query(default=None, alias="status"),
+    current_user: CurrentUser = Depends(get_current_user),
+    db: Database = Depends(get_db),
+):
+    query = {"student_id": current_user.id}
+    if status_filter:
+        query["status"] = status_filter
+
+    applications = list(db.applications.find(query).sort("applied_at", -1))
+    jobs = {
+        job["_id"]: job
+        for job in db.jobs.find(
+            {"_id": {"$in": [a["job_id"] for a in applications]}},
+            {"title": 1, "company_name": 1},
         )
-        .join(
-            Job,
-            Application.job_id == Job.id,
-        )
-        .join(
-            CompanyProfile,
-            Job.company_id == CompanyProfile.user_id,
-        )
-        .filter(
-            Application.student_id == current_user.id,
-            *(
-                [Application.status == status_filter]
-                if status_filter
-                else []
-            ),
-        )
-        .order_by(
-            Application.applied_at.desc()
-        )
-        .all()
-    ) 
+    }
 
     return [
         ApplicationListItem(
-            id=application.id,
-            job_id=application.job_id,
-            job_title=job_title,
-            company_name=company_name,
-            resume_path=application.resume_path,
-            applied_at=application.applied_at,
-            status=application.status,
+            id=application["_id"],
+            job_id=application["job_id"],
+            job_title=jobs.get(application["job_id"], {}).get("title", "(job removed)"),
+            company_name=jobs.get(application["job_id"], {}).get("company_name", ""),
+            resume_path=application["resume_path"],
+            applied_at=application["applied_at"],
+            status=application["status"],
         )
-        for application, job_title, company_name in applications
+        for application in applications
+    ]
+
+
+@router.get("/notifications/me")
+def get_my_notifications(
+    current_user: CurrentUser = Depends(require_student),
+    db: Database = Depends(get_db),
+):
+    """
+    Status-change notifications written by the notification worker.
+    """
+
+    return [
+        {
+            "id": note["_id"],
+            "application_id": note["application_id"],
+            "text": note["text"],
+            "new_status": note["new_status"],
+            "created_at": note["created_at"],
+        }
+        for note in db.notifications.find({"student_id": current_user.id}).sort("created_at", -1).limit(50)
     ]

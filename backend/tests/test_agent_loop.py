@@ -9,8 +9,7 @@ from app.assistant import AssistantSettings, ModelClient, ToolContext, run_assis
 from app.assistant.agent import CHAIN_LOST, MALFORMED, TEXT_INSTEAD_OF_TOOL, UNKNOWN_TOOL
 from app.assistant.model_client import ModelReply, ToolCall, parse_text_tool_calls
 from app.assistant.tools import TOOL_SCHEMAS, execute_tool
-from app.database import SessionLocal
-from app.models import SavedItem
+from app.database import get_database
 
 
 DEMO_STUDENT_ID = 51
@@ -43,11 +42,10 @@ def text(content):
 
 @pytest.fixture
 def db():
-    session = SessionLocal()
-    yield session
-    session.query(SavedItem).filter(SavedItem.student_id == DEMO_STUDENT_ID).delete()
-    session.commit()
-    session.close()
+    database = get_database()
+    database.saved_items.delete_many({"student_id": DEMO_STUDENT_ID})
+    yield database
+    database.saved_items.delete_many({"student_id": DEMO_STUDENT_ID})
 
 
 def quiet(**overrides):
@@ -190,7 +188,7 @@ def test_declined_save_returns_cancellation_and_saves_nothing(db):
 
     assert asked == [{"item_type": "job", "item_id": 5}]
     assert conversation[2]["content"].startswith("CANCELLED")
-    assert db.query(SavedItem).filter_by(student_id=DEMO_STUDENT_ID).count() == 0
+    assert db.saved_items.count_documents({"student_id": DEMO_STUDENT_ID}) == 0
     assert len(run.tool_calls) == 1
 
 
@@ -200,7 +198,7 @@ def test_approved_save_changes_state(db):
     run_assistant("Save job 5.", [], ctx=ToolContext(db=db, student_id=DEMO_STUDENT_ID),
                   client=model, settings=quiet(ask=lambda name, args: True))
 
-    assert db.query(SavedItem).filter_by(student_id=DEMO_STUDENT_ID, item_type="job", item_id=5).count() == 1
+    assert db.saved_items.count_documents({"student_id": DEMO_STUDENT_ID, "item_type": "job", "item_id": 5}) == 1
 
 
 def test_read_only_tools_are_never_gated(db):

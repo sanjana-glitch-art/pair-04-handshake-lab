@@ -8,12 +8,16 @@ same SEED always produces the same rows. Dates are offsets from the
 anchor date (today by default) so events stay "upcoming" whenever the
 script is run; pass --anchor-date to pin them.
 
-Usage, from the repository root with MySQL running and .env filled in:
+Lab 2: the rows are written to MongoDB (database p4_handshake) through
+mongo_loader.py, the same converter the MySQL -> MongoDB migration uses.
+
+Usage, from the repository root with MongoDB running and .env filled in:
 
     backend/.venv/bin/python database/seed/generate_seed.py --reset
 
---reset drops p4_handshake, recreates it from database/schema.sql,
-and then loads the seed rows.
+--reset drops every collection first. The seed also loads the assistant
+rules (memory layer 1) and the 64-entry memory fixture for the demo
+student (memory_fixture.py).
 """
 
 import argparse
@@ -25,14 +29,11 @@ from datetime import date, datetime, time, timedelta
 from pathlib import Path
 
 import bcrypt
-import pymysql
 from dotenv import load_dotenv
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 BACKEND_DIR = REPO_ROOT / "backend"
-SCHEMA_FILE = REPO_ROOT / "database" / "schema.sql"
-UPLOAD_DIR = BACKEND_DIR / "uploads"
 
 load_dotenv(REPO_ROOT / ".env")
 
@@ -40,11 +41,13 @@ load_dotenv(REPO_ROOT / ".env")
 # the assistant, and the seed data all agree on it.
 sys.path.insert(0, str(BACKEND_DIR))
 from app.eligibility import is_student_eligible  # noqa: E402
+from app.database import MONGO_DATABASE, get_database  # noqa: E402
+from mongo_loader import load_documents, rows_to_documents, store_resume_file  # noqa: E402
 
 
 PAIR = int(os.getenv("PAIR", "4"))
 SEED = int(os.getenv("SEED", str(PAIR)))
-DATABASE = os.getenv("MYSQL_DATABASE", f"p{PAIR}_handshake")
+DATABASE = MONGO_DATABASE
 
 CITY_SET = ["San Jose", "Santa Clara", "Milpitas"]
 STATE = "CA"
@@ -222,13 +225,11 @@ def make_salary(rng, category, title):
     return float(low), float(low + rng.randrange(2, 8))
 
 
-def write_sample_resume():
+def sample_resume_pdf():
     """
-    Every seeded application points at one small, valid PDF so the
-    company resume preview works for seed data too.
+    Every seeded application points at one small, valid PDF (stored in
+    GridFS) so the company resume preview works for seed data too.
     """
-    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-    path = UPLOAD_DIR / SAMPLE_RESUME_NAME
     stream = b"BT /F1 18 Tf 72 720 Td (Sample seeded resume - Pair 4 Handshake lab) Tj ET"
     objects = [
         b"<< /Type /Catalog /Pages 2 0 R >>",
@@ -247,41 +248,11 @@ def write_sample_resume():
     for offset in offsets:
         out += f"{offset:010d} 00000 n \n".encode()
     out += f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\nstartxref\n{xref_at}\n%%EOF\n".encode()
-    path.write_bytes(bytes(out))
+    return bytes(out)
+
+
+def write_sample_resume():
     return f"uploads/{SAMPLE_RESUME_NAME}"
-
-
-def connect(database=None):
-    return pymysql.connect(
-        host=os.getenv("MYSQL_HOST", "localhost"),
-        port=int(os.getenv("MYSQL_PORT", "3306")),
-        user=os.getenv("MYSQL_USER", "root"),
-        password=os.getenv("MYSQL_PASSWORD", ""),
-        database=database,
-        charset="utf8mb4",
-        autocommit=False,
-    )
-
-
-def apply_schema(reset):
-    """
-    Runs database/schema.sql statement by statement.
-    """
-    sql = SCHEMA_FILE.read_text()
-    sql = re.sub(r"/\*.*?\*/", "", sql, flags=re.S)
-    sql = re.sub(r"--[^\n]*", "", sql)
-    statements = [s.strip() for s in sql.split(";") if s.strip()]
-
-    connection = connect()
-    try:
-        with connection.cursor() as cursor:
-            if reset:
-                cursor.execute(f"DROP DATABASE IF EXISTS `{DATABASE}`")
-            for statement in statements:
-                cursor.execute(statement)
-        connection.commit()
-    finally:
-        connection.close()
 
 
 def build_rows(anchor):
@@ -476,51 +447,31 @@ def build_rows(anchor):
     return rows
 
 
-INSERTS = {
-    "users": "INSERT INTO users (id, email, password_hash, user_role, created_at, updated_at) VALUES (%s,%s,%s,%s,%s,%s)",
-    "company_profiles": "INSERT INTO company_profiles (user_id, company_name, location, description, contact_email, contact_phone, created_at, updated_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
-    "student_profiles": "INSERT INTO student_profiles (user_id, full_name, date_of_birth, city, state, country, career_objective, college, degree, major, graduation_year, cgpa, experience, phone, created_at, updated_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-    "skills": "INSERT INTO skills (id, skill_name) VALUES (%s,%s)",
-    "student_skills": "INSERT INTO student_skills (student_id, skill_id) VALUES (%s,%s)",
-    "jobs": "INSERT INTO jobs (id, company_id, title, posted_date, deadline, location, is_remote, salary_min, salary_max, description, category, created_at, updated_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-    "job_skills": "INSERT INTO job_skills (job_id, skill_id) VALUES (%s,%s)",
-    "applications": "INSERT INTO applications (id, student_id, job_id, resume_path, applied_at, status, updated_at) VALUES (%s,%s,%s,%s,%s,%s,%s)",
-    "events": "INSERT INTO events (id, company_id, event_name, description, event_date, event_time, location, eligibility, created_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-    "event_registrations": "INSERT INTO event_registrations (id, student_id, event_id, registered_at) VALUES (%s,%s,%s,%s)",
-    "student_preferences": "INSERT INTO student_preferences (student_id, preferred_city, preferred_category, minimum_salary, preferred_work_mode, preferred_major, preferred_event_major, updated_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
-}
-
-
-def load_rows(rows):
-    connection = connect(DATABASE)
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT COUNT(*) FROM users")
-            if cursor.fetchone()[0]:
-                raise SystemExit(
-                    f"{DATABASE} already has data. Re-run with --reset to rebuild it."
-                )
-            for table, statement in INSERTS.items():
-                cursor.executemany(statement, rows[table])
-        connection.commit()
-    finally:
-        connection.close()
+TABLES = [
+    "users", "company_profiles", "student_profiles", "skills", "student_skills", "jobs",
+    "job_skills", "applications", "events", "event_registrations", "student_preferences",
+]
 
 
 def main():
+    from memory_fixture import seed_memory
+
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--reset", action="store_true", help="drop and recreate the database first")
+    parser.add_argument("--reset", action="store_true", help="drop every collection first")
     parser.add_argument("--anchor-date", type=date.fromisoformat, default=date.today(),
                         help="date that seeded dates are offsets from (default: today)")
     args = parser.parse_args()
 
-    apply_schema(args.reset)
     rows = build_rows(args.anchor_date)
-    load_rows(rows)
+    db = get_database()
+    load_documents(db, rows_to_documents(rows), reset=args.reset)
+    store_resume_file(db, write_sample_resume(), sample_resume_pdf())
+    memory_count = seed_memory(db, args.anchor_date)
 
-    print(f"Seeded {DATABASE} with SEED={SEED}, CITY_SET={CITY_SET}, anchor={args.anchor_date}")
-    for table in INSERTS:
+    print(f"Seeded MongoDB {DATABASE} with SEED={SEED}, CITY_SET={CITY_SET}, anchor={args.anchor_date}")
+    for table in TABLES:
         print(f"  {table:<22}{len(rows[table]):>6}")
+    print(f"  {'student_memory':<22}{memory_count:>6}  (demo student, includes duplicates and contradictions)")
     print(f"Every seeded account uses the password: {DEMO_PASSWORD}")
 
 

@@ -1,210 +1,117 @@
-from datetime import date
-
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from pymongo.database import Database
 
-from .database import get_db
-from .models import Job, User
-from .schemas import (
-    EmployerJobCreate,
-    EmployerJobResponse,
-    EmployerJobUpdate,
-)
-from .security import require_company
+from . import messaging
+from .database import get_db, iso_date, log_activity, next_id, today_iso, utcnow, with_id
+from .schemas import EmployerJobCreate, EmployerJobResponse, EmployerJobUpdate
+from .security import CurrentUser, require_company
 
 
-router = APIRouter(
-    prefix="/employer",
-    tags=["Employer"],
-)
+router = APIRouter(prefix="/employer", tags=["Employer"])
+
+NOT_YOURS = "Job not found or does not belong to your company."
 
 
-@router.post(
-    "/jobs",
-    response_model=EmployerJobResponse,
-    status_code=status.HTTP_201_CREATED,
-)
-def create_job(
-    request: EmployerJobCreate,
-    current_user: User = Depends(require_company),
-    db: Session = Depends(get_db),
-):
-    """
-    Creates a job owned by the logged-in company.
-    """
+def _own_job(db: Database, job_id: int, company_id: int) -> dict:
+    job = db.jobs.find_one({"_id": job_id, "company_id": company_id})
+    if not job:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=NOT_YOURS)
+    return job
 
-    if (
-        request.salary_min is not None
-        and request.salary_max is not None
-        and request.salary_min > request.salary_max
-    ):
+
+def _check_salary(salary_min, salary_max) -> None:
+    if salary_min is not None and salary_max is not None and salary_min > salary_max:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Minimum salary cannot exceed maximum salary.",
         )
 
-    new_job = Job(
-        company_id=current_user.id,
-        title=request.title,
-        posted_date=date.today(),
-        deadline=request.deadline,
-        location=request.location,
-        is_remote=request.is_remote,
-        salary_min=request.salary_min,
-        salary_max=request.salary_max,
-        description=request.description,
-        category=request.category,
-    )
 
-    db.add(new_job)
-    db.commit()
-    db.refresh(new_job)
-
-    return new_job
-
-
-@router.get(
-    "/jobs",
-    response_model=list[EmployerJobResponse],
-)
-def get_my_jobs(
-    current_user: User = Depends(require_company),
-    db: Session = Depends(get_db),
+@router.post("/jobs", response_model=EmployerJobResponse, status_code=status.HTTP_201_CREATED)
+def create_job(
+    request: EmployerJobCreate,
+    current_user: CurrentUser = Depends(require_company),
+    db: Database = Depends(get_db),
 ):
     """
-    Returns only jobs created by the logged-in company.
+    Creates a job owned by the logged-in company and publishes
+    job.created for the search-index worker.
     """
 
-    return (
-        db.query(Job)
-        .filter(Job.company_id == current_user.id)
-        .order_by(Job.created_at.desc())
-        .all()
+    _check_salary(request.salary_min, request.salary_max)
+    company = db.company_profiles.find_one({"_id": current_user.id}, {"company_name": 1}) or {}
+    now = utcnow()
+
+    job = {
+        "_id": next_id(db, "jobs"),
+        "company_id": current_user.id,
+        "company_name": company.get("company_name", ""),
+        "title": request.title,
+        "posted_date": today_iso(),
+        "deadline": iso_date(request.deadline),
+        "location": request.location,
+        "is_remote": request.is_remote,
+        "salary_min": request.salary_min,
+        "salary_max": request.salary_max,
+        "description": request.description,
+        "category": request.category,
+        "skills": [],
+        "created_at": now,
+        "updated_at": now,
+    }
+
+    db.jobs.insert_one(job)
+    log_activity(db, current_user.id, "job_created", {"job_id": job["_id"]})
+    messaging.publish(
+        messaging.JOB_CREATED,
+        key=str(job["_id"]),
+        payload={"job_id": job["_id"], "company_id": current_user.id, "title": job["title"]},
     )
 
-
-@router.get(
-    "/jobs/{job_id}",
-    response_model=EmployerJobResponse,
-)
-def get_my_job(
-    job_id: int,
-    current_user: User = Depends(require_company),
-    db: Session = Depends(get_db),
-):
-    """
-    Returns one job only if it belongs to the logged-in company.
-    """
-
-    job = (
-        db.query(Job)
-        .filter(
-            Job.id == job_id,
-            Job.company_id == current_user.id,
-        )
-        .first()
-    )
-
-    if not job:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Job not found or does not belong to your company.",
-        )
-
-    return job
+    return with_id(job)
 
 
-@router.put(
-    "/jobs/{job_id}",
-    response_model=EmployerJobResponse,
-)
+@router.get("/jobs", response_model=list[EmployerJobResponse])
+def get_my_jobs(current_user: CurrentUser = Depends(require_company), db: Database = Depends(get_db)):
+    return [with_id(job) for job in db.jobs.find({"company_id": current_user.id}).sort("created_at", -1)]
+
+
+@router.get("/jobs/{job_id}", response_model=EmployerJobResponse)
+def get_my_job(job_id: int, current_user: CurrentUser = Depends(require_company), db: Database = Depends(get_db)):
+    return with_id(_own_job(db, job_id, current_user.id))
+
+
+@router.put("/jobs/{job_id}", response_model=EmployerJobResponse)
 def update_my_job(
     job_id: int,
     request: EmployerJobUpdate,
-    current_user: User = Depends(require_company),
-    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(require_company),
+    db: Database = Depends(get_db),
 ):
-    """
-    Updates a job owned by the logged-in company.
-    """
+    job = _own_job(db, job_id, current_user.id)
+    update_data = request.model_dump(exclude_unset=True)
 
-    job = (
-        db.query(Job)
-        .filter(
-            Job.id == job_id,
-            Job.company_id == current_user.id,
-        )
-        .first()
+    _check_salary(
+        update_data.get("salary_min", job.get("salary_min")),
+        update_data.get("salary_max", job.get("salary_max")),
     )
 
-    if not job:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Job not found or does not belong to your company.",
-        )
+    if "deadline" in update_data:
+        update_data["deadline"] = iso_date(update_data["deadline"])
+    update_data["updated_at"] = utcnow()
 
-    update_data = request.model_dump(
-        exclude_unset=True,
-    )
-
-    proposed_min = update_data.get(
-        "salary_min",
-        job.salary_min,
-    )
-
-    proposed_max = update_data.get(
-        "salary_max",
-        job.salary_max,
-    )
-
-    if (
-        proposed_min is not None
-        and proposed_max is not None
-        and proposed_min > proposed_max
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Minimum salary cannot exceed maximum salary.",
-        )
-
-    for field, value in update_data.items():
-        setattr(job, field, value)
-
-    db.commit()
-    db.refresh(job)
-
-    return job
+    db.jobs.update_one({"_id": job_id}, {"$set": update_data})
+    return with_id(db.jobs.find_one({"_id": job_id}))
 
 
-@router.delete(
-    "/jobs/{job_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-)
-def delete_my_job(
-    job_id: int,
-    current_user: User = Depends(require_company),
-    db: Session = Depends(get_db),
-):
-    """
-    Deletes a job owned by the logged-in company.
-    """
+@router.delete("/jobs/{job_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_my_job(job_id: int, current_user: CurrentUser = Depends(require_company), db: Database = Depends(get_db)):
+    _own_job(db, job_id, current_user.id)
 
-    job = (
-        db.query(Job)
-        .filter(
-            Job.id == job_id,
-            Job.company_id == current_user.id,
-        )
-        .first()
-    )
-
-    if not job:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Job not found or does not belong to your company.",
-        )
-
-    db.delete(job)
-    db.commit()
+    # MySQL cascaded these deletes; MongoDB needs them spelled out.
+    db.jobs.delete_one({"_id": job_id})
+    db.applications.delete_many({"job_id": job_id})
+    db.saved_items.delete_many({"item_type": "job", "item_id": job_id})
+    log_activity(db, current_user.id, "job_deleted", {"job_id": job_id})
 
     return None

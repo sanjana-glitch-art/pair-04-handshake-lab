@@ -1,87 +1,47 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from pymongo import ReturnDocument
+from pymongo.database import Database
 
-from .database import get_db
-from .models import StudentPreference, User
-from .schemas import (
-    StudentPreferenceResponse,
-    StudentPreferenceUpdate,
-)
-from .security import get_current_user
+from .database import get_db, utcnow
+from .schemas import StudentPreferenceResponse, StudentPreferenceUpdate
+from .security import CurrentUser, get_current_user
 
 
-router = APIRouter(
-    prefix="/preferences",
-    tags=["Student Preferences"],
-)
+router = APIRouter(prefix="/preferences", tags=["Student Preferences"])
 
 
-@router.get(
-    "/me",
-    response_model=StudentPreferenceResponse,
-)
-def get_my_preferences(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-    """
-    Returns preferences for the logged-in student.
-    """
-
-    preferences = (
-        db.query(StudentPreference)
-        .filter(
-            StudentPreference.student_id == current_user.id
-        )
-        .first()
-    )
-
-    if preferences is None:
-        return StudentPreferenceResponse(
-            student_id=current_user.id
-        )
-
-    return preferences
+def _response(student_id: int, document: dict | None) -> dict:
+    document = dict(document or {})
+    document.pop("_id", None)
+    document.pop("updated_at", None)
+    return {"student_id": student_id, **document}
 
 
-@router.put(
-    "/me",
-    response_model=StudentPreferenceResponse,
-)
+@router.get("/me", response_model=StudentPreferenceResponse)
+def get_my_preferences(current_user: CurrentUser = Depends(get_current_user), db: Database = Depends(get_db)):
+    return _response(current_user.id, db.student_preferences.find_one({"_id": current_user.id}))
+
+
+@router.put("/me", response_model=StudentPreferenceResponse)
 def update_my_preferences(
     preference_data: StudentPreferenceUpdate,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+    db: Database = Depends(get_db),
 ):
     """
-    Creates or updates preferences for the logged-in student.
+    Creates or updates preferences for the logged-in student. A first
+    save stores every field; later saves change only the fields sent.
     """
 
-    preferences = (
-        db.query(StudentPreference)
-        .filter(
-            StudentPreference.student_id == current_user.id
-        )
-        .first()
+    exists = db.student_preferences.find_one({"_id": current_user.id}, {"_id": 1}) is not None
+    updates = preference_data.model_dump(exclude_unset=exists)
+    updates["updated_at"] = utcnow()
+
+    document = db.student_preferences.find_one_and_update(
+        {"_id": current_user.id},
+        {"$set": updates},
+        upsert=True,
+        return_document=ReturnDocument.AFTER,
     )
 
-    if preferences is None:
-        preferences = StudentPreference(
-            student_id=current_user.id,
-            **preference_data.model_dump(),
-        )
-
-        db.add(preferences)
-
-    else:
-        updates = preference_data.model_dump(
-            exclude_unset=True
-        )
-
-        for field, value in updates.items():
-            setattr(preferences, field, value)
-
-    db.commit()
-    db.refresh(preferences)
-
-    return preferences
+    return _response(current_user.id, document)
