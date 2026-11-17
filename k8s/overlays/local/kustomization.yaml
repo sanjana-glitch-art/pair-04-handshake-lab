@@ -1,0 +1,18 @@
+# Docker Desktop / kind: images built locally, Ollama on the host machine.
+#   kubectl apply -k k8s/overlays/local
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources: [../../base]
+patches:
+  - target: {kind: ConfigMap, name: p4-config}
+    patch: |-
+      - op: replace
+        path: /data/OLLAMA_HOST
+        value: http://host.docker.internal:11434
+  # kind has no cloud load balancer: pin the NodePort that kind-cluster.yaml
+  # maps to http://localhost:9050.
+  - target: {kind: Service, name: p4-frontend}
+    patch: |-
+      - op: add
+        path: /spec/ports/0/nodePort
+        value: 30940

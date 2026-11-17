@@ -1,0 +1,132 @@
+# Kafka consumers. Each reuses the image of the service that owns its topics.
+# Consumers in one group share partitions, so replicas scale up to 3 (partitions per topic).
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: p4-application-worker
+  namespace: p4-handshake
+  labels: {app: p4-application-worker, tier: worker}
+spec:
+  replicas: 2
+  selector: {matchLabels: {app: p4-application-worker}}
+  template:
+    metadata: {labels: {app: p4-application-worker, tier: worker}}
+    spec:
+      containers:
+        - name: application-worker
+          image: p4-application-service:2.0
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-m", "app.workers.runner", "application"]
+          envFrom:
+            - configMapRef: {name: p4-config}
+            - secretRef: {name: p4-secrets}
+          env:
+            - {name: SERVICE_NAME, value: application-worker}
+          resources:
+            requests: {cpu: 100m, memory: 192Mi}
+            limits: {cpu: 500m, memory: 256Mi}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: p4-notification-worker
+  namespace: p4-handshake
+  labels: {app: p4-notification-worker, tier: worker}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: p4-notification-worker}}
+  template:
+    metadata: {labels: {app: p4-notification-worker, tier: worker}}
+    spec:
+      containers:
+        - name: notification-worker
+          image: p4-application-service:2.0
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-m", "app.workers.runner", "notification"]
+          envFrom:
+            - configMapRef: {name: p4-config}
+            - secretRef: {name: p4-secrets}
+          env:
+            - {name: SERVICE_NAME, value: notification-worker}
+          resources:
+            requests: {cpu: 100m, memory: 192Mi}
+            limits: {cpu: 500m, memory: 256Mi}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: p4-event-worker
+  namespace: p4-handshake
+  labels: {app: p4-event-worker, tier: worker}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: p4-event-worker}}
+  template:
+    metadata: {labels: {app: p4-event-worker, tier: worker}}
+    spec:
+      containers:
+        - name: event-worker
+          image: p4-event-service:2.0
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-m", "app.workers.runner", "event"]
+          envFrom:
+            - configMapRef: {name: p4-config}
+            - secretRef: {name: p4-secrets}
+          env:
+            - {name: SERVICE_NAME, value: event-worker}
+          resources:
+            requests: {cpu: 100m, memory: 192Mi}
+            limits: {cpu: 500m, memory: 256Mi}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: p4-job-worker
+  namespace: p4-handshake
+  labels: {app: p4-job-worker, tier: worker}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: p4-job-worker}}
+  template:
+    metadata: {labels: {app: p4-job-worker, tier: worker}}
+    spec:
+      containers:
+        - name: job-worker
+          image: p4-job-service:2.0
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-m", "app.workers.runner", "job"]
+          envFrom:
+            - configMapRef: {name: p4-config}
+            - secretRef: {name: p4-secrets}
+          env:
+            - {name: SERVICE_NAME, value: job-worker}
+          resources:
+            requests: {cpu: 100m, memory: 192Mi}
+            limits: {cpu: 500m, memory: 256Mi}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: p4-memory-worker
+  namespace: p4-handshake
+  labels: {app: p4-memory-worker, tier: worker}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: p4-memory-worker}}
+  template:
+    metadata: {labels: {app: p4-memory-worker, tier: worker}}
+    spec:
+      containers:
+        - name: memory-worker
+          image: p4-assistant-service:2.0
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-m", "app.workers.runner", "memory"]
+          envFrom:
+            - configMapRef: {name: p4-config}
+            - secretRef: {name: p4-secrets}
+          env:
+            - {name: SERVICE_NAME, value: memory-worker}
+          resources:
+            requests: {cpu: 100m, memory: 192Mi}
+            limits: {cpu: 500m, memory: 512Mi}

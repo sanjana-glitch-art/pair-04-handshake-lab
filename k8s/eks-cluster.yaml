@@ -1,0 +1,29 @@
+# Amazon EKS cluster for Lab 2 (eksctl).
+#   eksctl create cluster -f k8s/eks-cluster.yaml
+# Then: scripts/aws_push_ecr.sh, scripts/aws_deploy_eks.sh, scripts/aws_pause.sh.
+#
+# Sizing: the AWS account's EC2 quota is 5 vCPUs (new-account default), so the
+# cluster is one m7i.xlarge node (4 vCPU / 16 GiB) that runs the services,
+# workers, Kafka, MongoDB, and Ollama together. The aws overlay lowers CPU
+# requests and uses qwen3:1.7b to fit. With a 16+ vCPU quota, add a separate
+# model node group (m6i.2xlarge, label p4/role: model) and qwen3:8b instead.
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: p4-handshake
+  region: us-west-2
+  version: "1.31"
+  tags: {project: p4-handshake, course: lab2}
+iam:
+  withOIDC: true
+addons:
+  - name: aws-ebs-csi-driver        # PersistentVolumes for MongoDB and Kafka
+    wellKnownPolicies: {ebsCSIController: true}
+managedNodeGroups:
+  - name: p4-nodes
+    instanceType: m7i.xlarge        # 4 vCPU / 16 GiB
+    desiredCapacity: 1
+    minSize: 0                      # scale to 0 between verification and the demo
+    maxSize: 1
+    volumeSize: 60                  # images + the Ollama model
+    labels: {p4/role: model}        # Ollama's nodeSelector matches this node

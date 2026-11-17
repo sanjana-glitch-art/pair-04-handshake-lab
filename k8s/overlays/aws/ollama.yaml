@@ -1,0 +1,39 @@
+# Model server for the assistant inside the cluster (used on AWS).
+# Locally the overlay points OLLAMA_HOST at the host's Ollama instead.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: p4-ollama
+  namespace: p4-handshake
+  labels: {app: p4-ollama}
+spec:
+  replicas: 1
+  strategy: {type: Recreate}   # one node: the old pod must free its CPU first
+  selector: {matchLabels: {app: p4-ollama}}
+  template:
+    metadata: {labels: {app: p4-ollama}}
+    spec:
+      nodeSelector: {p4/role: model}
+      containers:
+        - name: ollama
+          image: ollama/ollama:0.12.6
+          ports: [{containerPort: 11434}]
+          lifecycle:
+            postStart:
+              exec: {command: ["sh", "-c", "sleep 5 && ollama pull qwen3:1.7b"]}
+          resources:
+            requests: {cpu: "1", memory: 4Gi}
+            limits: {cpu: "4", memory: 8Gi}
+          volumeMounts: [{name: models, mountPath: /root/.ollama}]
+      volumes:
+        - name: models
+          emptyDir: {sizeLimit: 20Gi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: p4-ollama
+  namespace: p4-handshake
+spec:
+  selector: {app: p4-ollama}
+  ports: [{name: http, port: 11434}]

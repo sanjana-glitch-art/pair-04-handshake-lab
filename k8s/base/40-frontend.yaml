@@ -1,0 +1,36 @@
+# React app + nginx API gateway, exposed outside the cluster.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: p4-frontend
+  namespace: p4-handshake
+  labels: {app: p4-frontend, tier: web}
+spec:
+  replicas: 2
+  selector: {matchLabels: {app: p4-frontend}}
+  template:
+    metadata: {labels: {app: p4-frontend, tier: web}}
+    spec:
+      containers:
+        - name: frontend
+          image: p4-frontend:2.0
+          imagePullPolicy: IfNotPresent
+          ports: [{containerPort: 9040}]
+          envFrom: [{configMapRef: {name: p4-config}}]
+          resources:
+            requests: {cpu: 50m, memory: 64Mi}
+            limits: {cpu: 500m, memory: 128Mi}
+          readinessProbe:
+            httpGet: {path: /healthz, port: 9040}
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: p4-frontend
+  namespace: p4-handshake
+  labels: {app: p4-frontend}
+spec:
+  type: LoadBalancer   # an AWS load balancer on EKS; localhost on Docker Desktop
+  selector: {app: p4-frontend}
+  ports: [{name: http, port: 9040, targetPort: 9040}]

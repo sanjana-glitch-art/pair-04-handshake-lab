@@ -1,0 +1,28 @@
+# Non-secret settings shared by every service and worker.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: p4-config
+  namespace: p4-handshake
+data:
+  PAIR: "4"
+  DB_PREFIX: p4
+  SEED: "4"
+  MONGO_DATABASE: p4_handshake
+  # Kubernetes service discovery: <service>.<namespace>.svc.cluster.local
+  KAFKA_BOOTSTRAP_SERVERS: p4-kafka.p4-handshake.svc.cluster.local:9092
+  KAFKA_ENABLED: "true"
+  STUDENT_SERVICE_URL: http://p4-student-service.p4-handshake.svc.cluster.local:9041
+  OLLAMA_HOST: http://p4-ollama.p4-handshake.svc.cluster.local:11434
+  OLLAMA_MODEL: qwen3:8b
+  OLLAMA_THINK: "true"
+  CORS_ORIGINS: http://localhost:9040
+  UVICORN_WORKERS: "2"
+  # nginx gateway upstreams (frontend pod)
+  STUDENT_SERVICE: p4-student-service.p4-handshake.svc.cluster.local:9041
+  COMPANY_SERVICE: p4-company-service.p4-handshake.svc.cluster.local:9042
+  JOB_SERVICE: p4-job-service.p4-handshake.svc.cluster.local:9043
+  APPLICATION_SERVICE: p4-application-service.p4-handshake.svc.cluster.local:9044
+  EVENT_SERVICE: p4-event-service.p4-handshake.svc.cluster.local:9045
+  ASSISTANT_SERVICE: p4-assistant-service.p4-handshake.svc.cluster.local:9046
+  DNS_RESOLVER: kube-dns.kube-system.svc.cluster.local

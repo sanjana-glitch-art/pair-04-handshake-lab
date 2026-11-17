@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: p4-mongo
+  namespace: p4-handshake
+  labels: {app: p4-mongo}
+spec:
+  clusterIP: None   # headless: stable DNS for the StatefulSet pod
+  # Keep the DNS name even while a probe is failing under load, so the
+  # services do not lose the database because of a slow health check.
+  publishNotReadyAddresses: true
+  selector: {app: p4-mongo}
+  ports: [{name: mongo, port: 27017}]
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: p4-mongo
+  namespace: p4-handshake
+spec:
+  serviceName: p4-mongo
+  replicas: 1
+  selector: {matchLabels: {app: p4-mongo}}
+  template:
+    metadata: {labels: {app: p4-mongo}}
+    spec:
+      containers:
+        - name: mongo
+          image: mongo:7.0
+          ports: [{containerPort: 27017}]
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom: {secretKeyRef: {name: p4-secrets, key: MONGO_USER}}
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom: {secretKeyRef: {name: p4-secrets, key: MONGO_PASSWORD}}
+          resources:
+            requests: {cpu: 250m, memory: 512Mi}
+            limits: {cpu: "1", memory: 1Gi}
+          # A TCP check is cheap; mongosh starts a Node.js process every time
+          # and timed out under CPU load from the local model.
+          readinessProbe:
+            tcpSocket: {port: 27017}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+          volumeMounts: [{name: data, mountPath: /data/db}]
+  volumeClaimTemplates:
+    - metadata: {name: data}
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources: {requests: {storage: 5Gi}}
