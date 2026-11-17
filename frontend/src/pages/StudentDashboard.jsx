@@ -1,18 +1,19 @@
 import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import {
-  getMyApplications,
-  getMyPreferences,
-  getMyProfile,
-  getEvents,
-  searchJobs,
-} from "../services/api.js";
+import { getMyPreferences, getMyProfile } from "../services/api.js";
+import { fetchMyApplications, selectApplications } from "../store/slices/applicationsSlice.js";
+import { fetchEvents, selectEvents } from "../store/slices/eventsSlice.js";
+import { searchJobs, selectJobResults } from "../store/slices/jobsSlice.js";
+import { fetchSavedItems, removeSavedItem, selectSavedItems } from "../store/slices/savedSlice.js";
 
 function StudentDashboard() {
+  const dispatch = useDispatch();
   const [profile, setProfile] = useState(null);
-  const [jobs, setJobs] = useState([]);
-  const [events, setEvents] = useState([]);
-  const [applications, setApplications] = useState([]);
+  const jobs = useSelector(selectJobResults).slice(0, 3);
+  const events = useSelector(selectEvents).slice(0, 3);
+  const applications = useSelector(selectApplications);
+  const savedItems = useSelector(selectSavedItems);
   const [preferences, setPreferences] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -22,30 +23,16 @@ function StudentDashboard() {
 
   async function loadDashboard() {
     try {
-      const [
-        profileData,
-        jobsData,
-        eventsData,
-        applicationsData,
-        preferencesData,
-      ] = await Promise.all([
+      const [profileData, preferencesData] = await Promise.all([
         getMyProfile(),
-        searchJobs(),
-        getEvents(),
-        getMyApplications(),
         getMyPreferences(),
+        dispatch(searchJobs({})),
+        dispatch(fetchEvents({})),
+        dispatch(fetchMyApplications("")),
+        dispatch(fetchSavedItems()),
       ]);
 
       setProfile(profileData);
-      setJobs(Array.isArray(jobsData) ? jobsData.slice(0, 3) : []);
-      setEvents(
-        Array.isArray(eventsData) ? eventsData.slice(0, 3) : []
-      );
-      setApplications(
-        Array.isArray(applicationsData)
-          ? applicationsData
-          : []
-      );
       setPreferences(preferencesData);
     } catch (error) {
       console.error("Dashboard loading failed:", error);
@@ -290,6 +277,38 @@ function StudentDashboard() {
               </div>
             </Link>
           ))
+        )}
+      </section>
+
+      <h2 className="section-heading mt-4">Saved items</h2>
+
+      <section className="card p-3" data-testid="saved-items">
+        {savedItems.length === 0 ? (
+          <p className="text-muted mb-0">
+            Nothing saved yet. Save a job from the Jobs page or ask the assistant to save one.
+          </p>
+        ) : (
+          <ul className="list-unstyled mb-0">
+            {savedItems.map((item) => (
+              <li key={item.id} className="d-flex justify-content-between align-items-center py-1">
+                <span>
+                  <span className="badge bg-secondary me-2">{item.item_type}</span>
+                  {item.item_type === "job" ? (
+                    <Link to={`/student/jobs/${item.item_id}`}>{item.title}</Link>
+                  ) : (
+                    item.title
+                  )}
+                </span>
+                <button
+                  type="button"
+                  className="btn btn-link btn-sm text-danger"
+                  onClick={() => dispatch(removeSavedItem(item.id))}
+                >
+                  Remove
+                </button>
+              </li>
+            ))}
+          </ul>
         )}
       </section>
     </div>

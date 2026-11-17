@@ -1,21 +1,55 @@
 import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
-  chatWithAssistant,
-  confirmAssistantAction,
-} from "../services/api.js";
-
-const GREETING = {
-  role: "assistant",
-  content:
-    "Hi! I can help you find jobs, discover events, review your preferences, and save opportunities.",
-};
+  answerConfirmation as answerConfirmationThunk,
+  selectAssistantError,
+  selectAssistantLoading,
+  selectConversation,
+  selectPendingAction,
+  selectTokenUsage,
+  sendMessage,
+  startNewChat as startNewChatThunk,
+} from "../store/slices/assistantSlice.js";
 
 const SUGGESTIONS = [
   ["Find internships in my city", "Find an internship in my city."],
   ["Remote data science internships", "Find a remote data science internship that matches my Python and SQL skills."],
   ["CS events next month", "Find an event for computer science students next month."],
   ["Review my preferences", "What are my saved preferences?"],
+  ["What do you remember?", "/memory"],
 ];
+
+// Tokens used by the last model call and how full the context window is.
+function TokenMeter({ usage }) {
+  if (!usage) {
+    return null;
+  }
+
+  const percent = Math.min(100, usage.context_percent);
+  const barClass = usage.warning ? "bg-danger" : percent > 50 ? "bg-warning" : "bg-success";
+
+  return (
+    <div className="px-3 pt-2 small" data-testid="token-meter">
+      <div className="d-flex justify-content-between text-muted">
+        <span>
+          Tokens: {usage.prompt_tokens.toLocaleString()} prompt + {usage.completion_tokens.toLocaleString()} completion
+        </span>
+        <span>
+          {usage.context_percent}% of {usage.context_window.toLocaleString()}-token context
+        </span>
+      </div>
+      <div className="progress" style={{ height: 6 }}>
+        <div className={`progress-bar ${barClass}`} style={{ width: `${percent}%` }} />
+      </div>
+      {usage.warning && (
+        <div className="alert alert-warning py-1 px-2 mt-2 mb-0">
+          This conversation is using over 70% of the model's context window. Type /compact to summarize it,
+          or start a new chat.
+        </div>
+      )}
+    </div>
+  );
+}
 
 // Shows the tool calls the agent loop made for one answer.
 function ToolTrace({ calls }) {
@@ -44,70 +78,34 @@ function ToolTrace({ calls }) {
 }
 
 function Assistant() {
-  const [messages, setMessages] = useState([GREETING]);
-  const [conversationId, setConversationId] = useState(null);
-  const [pending, setPending] = useState(null);
+  const dispatch = useDispatch();
+
+  // The thread lives in the Redux assistant slice, so leaving this page
+  // and coming back keeps it.
+  const messages = useSelector(selectConversation);
+  const pending = useSelector(selectPendingAction);
+  const loading = useSelector(selectAssistantLoading);
+  const error = useSelector(selectAssistantError);
+  const usage = useSelector(selectTokenUsage);
   const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
-  function addAssistantReply(response) {
-    setConversationId(response.conversation_id);
-    setPending(response.pending_action);
-    setMessages((current) => [
-      ...current,
-      {
-        role: "assistant",
-        content: response.answer,
-        toolCalls: response.tool_calls,
-      },
-    ]);
-  }
-
-  async function send(text) {
+  function send(text) {
     const userMessage = text.trim();
 
     if (!userMessage || loading || pending) {
       return;
     }
 
-    setMessages((current) => [...current, { role: "user", content: userMessage }]);
     setInput("");
-    setError("");
-    setLoading(true);
-
-    try {
-      addAssistantReply(await chatWithAssistant(userMessage, conversationId));
-    } catch (err) {
-      setError(err.message || "The assistant could not respond.");
-    } finally {
-      setLoading(false);
-    }
+    dispatch(sendMessage(userMessage));
   }
 
-  async function answerConfirmation(approved) {
-    setMessages((current) => [
-      ...current,
-      { role: "user", content: approved ? "Yes, save it." : "No, don't save it." },
-    ]);
-    setPending(null);
-    setError("");
-    setLoading(true);
-
-    try {
-      addAssistantReply(await confirmAssistantAction(conversationId, approved));
-    } catch (err) {
-      setError(err.message || "The assistant could not respond.");
-    } finally {
-      setLoading(false);
-    }
+  function answerConfirmation(approved) {
+    dispatch(answerConfirmationThunk(approved));
   }
 
   function startNewChat() {
-    setMessages([GREETING]);
-    setConversationId(null);
-    setPending(null);
-    setError("");
+    dispatch(startNewChatThunk());
   }
 
   function handleSubmit(event) {
@@ -152,6 +150,8 @@ function Assistant() {
       </div>
 
       <div className="assistant-chat-card">
+        <TokenMeter usage={usage} />
+
         <div className="assistant-messages">
           {messages.map((message, index) => (
             <div

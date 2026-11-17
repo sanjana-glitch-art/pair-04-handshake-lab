@@ -1,17 +1,26 @@
 import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
-  getJobDetails,
-  searchJobs,
   submitApplication,
-} from "../services/api.js";
-
-const initialFilters = {
-  search: "",
-  category: "",
-  city: "",
-  remote: "",
-  min_salary: "",
-};
+  submissionCleared,
+  selectSubmitting,
+} from "../store/slices/applicationsSlice.js";
+import {
+  emptyJobFilters as initialFilters,
+  fetchJobDetails,
+  filtersChanged,
+  filtersReset,
+  jobSelected,
+  searchJobs,
+  selectDetailsLoading,
+  selectJobFilters,
+  selectJobResults,
+  selectJobsError,
+  selectJobsLoading,
+  selectSelectedJob,
+  selectSelectedJobId,
+} from "../store/slices/jobsSlice.js";
+import { saveItem, selectIsSaved } from "../store/slices/savedSlice.js";
 
 function formatCategory(category) {
   if (!category) return "Opportunity";
@@ -44,85 +53,45 @@ function getInitials(name = "") {
 }
 
 function Jobs() {
-  const [jobs, setJobs] = useState([]);
-  const [selectedJobId, setSelectedJobId] = useState(null);
-  const [selectedJob, setSelectedJob] = useState(null);
+  const dispatch = useDispatch();
 
-  const [filters, setFilters] = useState(initialFilters);
-
-  const [loading, setLoading] = useState(true);
-  const [detailsLoading, setDetailsLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  // Search, results, and the selected posting live in the jobs slice, so
+  // they survive navigating away and back.
+  const jobs = useSelector(selectJobResults);
+  const filters = useSelector(selectJobFilters);
+  const selectedJobId = useSelector(selectSelectedJobId);
+  const selectedJob = useSelector(selectSelectedJob);
+  const loading = useSelector(selectJobsLoading);
+  const detailsLoading = useSelector(selectDetailsLoading);
+  const searchError = useSelector(selectJobsError);
+  const submitting = useSelector(selectSubmitting);
+  const isSaved = useSelector(selectIsSaved("job", selectedJobId));
 
   const [resume, setResume] = useState(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
   async function loadJobs(currentFilters = filters) {
-    setLoading(true);
     setError("");
     setSuccess("");
-
-    try {
-      const results = await searchJobs(currentFilters);
-      setJobs(results);
-
-      if (results.length === 0) {
-        setSelectedJobId(null);
-        setSelectedJob(null);
-        return;
-      }
-
-      const selectedStillExists = results.some(
-        (job) => job.id === selectedJobId
-      );
-
-      const nextJobId = selectedStillExists
-        ? selectedJobId
-        : results[0].id;
-
-      setSelectedJobId(nextJobId);
-      await loadJobDetails(nextJobId);
-    } catch (requestError) {
-      setError(requestError.message || "Unable to load jobs.");
-      setJobs([]);
-      setSelectedJob(null);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function loadJobDetails(jobId) {
-    if (!jobId) return;
-
-    setDetailsLoading(true);
-    setError("");
-    setSuccess("");
-
-    try {
-      const details = await getJobDetails(jobId);
-      setSelectedJob(details);
-    } catch (requestError) {
-      setError(
-        requestError.message || "Unable to load job details."
-      );
-      setSelectedJob(null);
-    } finally {
-      setDetailsLoading(false);
-    }
+    await dispatch(searchJobs(currentFilters));
   }
 
   useEffect(() => {
-    loadJobs(initialFilters);
+    if (!jobs.length) {
+      loadJobs(filters);
+    }
   }, []);
+
+  useEffect(() => {
+    if (selectedJobId && !selectedJob) {
+      dispatch(fetchJobDetails(selectedJobId));
+    }
+  }, [selectedJobId, selectedJob, dispatch]);
 
   function handleFilterChange(event) {
     const { name, value } = event.target;
-
-    setFilters((previous) => ({
-      ...previous,
-      [name]: value,
-    }));
+    dispatch(filtersChanged({ [name]: value }));
   }
 
   async function handleSearch(event) {
@@ -131,13 +100,21 @@ function Jobs() {
   }
 
   async function handleReset() {
-    setFilters(initialFilters);
+    dispatch(filtersReset());
     await loadJobs(initialFilters);
   }
 
   async function handleSelectJob(jobId) {
-    setSelectedJobId(jobId);
-    await loadJobDetails(jobId);
+    setError("");
+    setSuccess("");
+    dispatch(jobSelected(jobId));
+    dispatch(fetchJobDetails(jobId));
+  }
+
+  async function handleSave() {
+    const result = await dispatch(saveItem({ itemType: "job", itemId: selectedJob.id }));
+    if (saveItem.rejected.match(result)) setError(result.payload);
+    else setSuccess(`Saved "${selectedJob.title}" to your saved items.`);
   }
 
   function handleResumeChange(event) {
@@ -164,42 +141,25 @@ function Jobs() {
       return;
     }
 
-    const confirmed = window.confirm(
-      `Submit your application for "${selectedJob.title}"?`
-    );
-
-    if (!confirmed) {
+    if (!window.confirm(`Submit your application for "${selectedJob.title}"?`)) {
       return;
     }
 
-    setSubmitting(true);
     setError("");
     setSuccess("");
+    dispatch(submissionCleared());
 
-    try {
-      await submitApplication(selectedJob.id, resume);
+    const result = await dispatch(submitApplication({ jobId: selectedJob.id, resume }));
 
-      setSuccess(
-        "Your application was submitted successfully."
-      );
-
-      setResume(null);
-
-      const fileInput = document.getElementById(
-        "resume-upload"
-      );
-
-      if (fileInput) {
-        fileInput.value = "";
-      }
-    } catch (requestError) {
-      setError(
-        requestError.message ||
-          "Unable to submit your application."
-      );
-    } finally {
-      setSubmitting(false);
+    if (submitApplication.rejected.match(result)) {
+      setError(result.payload || "Unable to submit your application.");
+      return;
     }
+
+    setSuccess("Your application was submitted successfully. It is being processed and will appear under Applications.");
+    setResume(null);
+    const fileInput = document.getElementById("resume-upload");
+    if (fileInput) fileInput.value = "";
   }
 
   return (
@@ -279,9 +239,9 @@ function Jobs() {
         </form>
       </header>
 
-      {error && (
+      {(error || searchError) && (
         <div className="jobs-message jobs-error">
-          {error}
+          {error || searchError}
         </div>
       )}
 
@@ -442,6 +402,15 @@ function Jobs() {
                       : "Submit application"}
                   </button>
                 </form>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary btn-sm mt-2"
+                  onClick={handleSave}
+                  disabled={isSaved}
+                >
+                  {isSaved ? "Saved" : "Save job"}
+                </button>
               </section>
             </article>
           )}

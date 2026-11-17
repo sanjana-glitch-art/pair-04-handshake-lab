@@ -1,33 +1,26 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { getMyApplications } from "../services/api.js";
+import {
+  fetchMyApplications,
+  selectApplicationFilter,
+  selectApplications,
+  selectApplicationsError,
+  selectApplicationsLoading,
+  statusFilterChanged,
+} from "../store/slices/applicationsSlice.js";
 
 function Applications() {
-  const [applications, setApplications] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const dispatch = useDispatch();
+  const applications = useSelector(selectApplications);
+  const loading = useSelector(selectApplicationsLoading);
+  const error = useSelector(selectApplicationsError);
+  const statusFilter = useSelector(selectApplicationFilter);
+  const setStatusFilter = (status) => dispatch(statusFilterChanged(status));
 
   useEffect(() => {
-    async function loadApplications() {
-      try {
-        setLoading(true);
-        setError("");
-
-        const data = await getMyApplications(statusFilter);
-
-        setApplications(Array.isArray(data) ? data : []);
-      } catch (err) {
-        setError(
-          err.message || "Unable to load your applications."
-        );
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadApplications();
-  }, [statusFilter]);
+    dispatch(fetchMyApplications(statusFilter));
+  }, [statusFilter, dispatch]);
 
   function formatDate(dateValue) {
     if (!dateValue) {
