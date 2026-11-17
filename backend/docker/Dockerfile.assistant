@@ -1,0 +1,26 @@
+# Pair 4 Handshake - assistant service (hand-built AI assistant, memory, compaction).
+# Build from backend/:  docker build -f docker/Dockerfile.assistant -t p4-assistant-service:2.0 .
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    SERVICE_NAME=assistant \
+    SERVICE_PORT=9046
+
+WORKDIR /srv
+
+# Only this service's dependencies (no test or migration packages).
+COPY requirements/ requirements/
+RUN pip install --no-cache-dir -r requirements/assistant.txt
+
+COPY app/ app/
+
+RUN useradd --create-home --uid 10001 handshake
+USER handshake
+
+EXPOSE 9046
+
+HEALTHCHECK --interval=15s --timeout=3s --start-period=20s --retries=3 \
+  CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:9046/health', timeout=2).status == 200 else 1)"
+
+CMD ["sh", "-c", "uvicorn app.services.assistant:app --host 0.0.0.0 --port ${SERVICE_PORT} --workers ${UVICORN_WORKERS:-2}"]
