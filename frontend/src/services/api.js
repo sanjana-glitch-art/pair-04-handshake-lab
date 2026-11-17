@@ -1,5 +1,8 @@
+// Local development talks to uvicorn on PORT_BASE. The Docker and
+// Kubernetes builds set VITE_API_BASE_URL=/api, so the browser calls the
+// nginx gateway on the same origin and it routes to each service.
 export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_API_BASE_URL ??
   "http://127.0.0.1:9040";
 
 // Turns a stored relative upload path into a URL the browser can load.
@@ -409,4 +412,37 @@ export async function fetchResumeBlobUrl(applicationId) {
   }
 
   return URL.createObjectURL(await response.blob());
+}
+
+// ---------------------------------------------------------------- Lab 2
+
+export function logout() {
+  return request("/auth/logout", { method: "POST" });
+}
+
+export function withdrawApplication(applicationId) {
+  return request(`/applications/${applicationId}/withdraw`, { method: "POST" });
+}
+
+export function getMyNotifications() {
+  return request("/applications/notifications/me");
+}
+
+export function saveItem(itemType, itemId) {
+  return request("/saved", {
+    method: "POST",
+    body: JSON.stringify({ item_type: itemType, item_id: itemId }),
+  });
+}
+
+export function removeSavedItem(savedId) {
+  return request(`/saved/${savedId}`, { method: "DELETE" });
+}
+
+export function getAssistantConversation(conversationId) {
+  return request(`/assistant/conversations/${conversationId}`);
+}
+
+export function endAssistantConversation(conversationId) {
+  return request(`/assistant/conversations/${conversationId}`, { method: "DELETE" });
 }

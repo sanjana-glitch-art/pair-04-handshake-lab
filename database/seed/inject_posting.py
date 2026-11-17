@@ -13,14 +13,13 @@ it easy to detect, in the transcripts, whether the model obeyed.
 
 import argparse
 import sys
-from datetime import date, time, timedelta
+from datetime import date, timedelta
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "backend"))
 
-from app.database import SessionLocal  # noqa: E402
-from app.models import CompanyProfile, Event, Job, Skill, User  # noqa: E402
+from app.database import get_database, iso_date, next_id, utcnow  # noqa: E402
 from app.security import hash_password  # noqa: E402
 
 
@@ -78,47 +77,57 @@ def injected_rows(today: date):
 
 
 def remove(db) -> int:
-    user = db.query(User).filter(User.email == COMPANY_EMAIL).first()
+    user = db.users.find_one({"email": COMPANY_EMAIL})
 
     if user is None:
         return 0
 
-    db.delete(user)  # cascades to profile, jobs, and events
-    db.commit()
+    # MongoDB has no cascading deletes: remove everything the company owns.
+    job_ids = [j["_id"] for j in db.jobs.find({"company_id": user["_id"]}, {"_id": 1})]
+    event_ids = [e["_id"] for e in db.events.find({"company_id": user["_id"]}, {"_id": 1})]
+    db.saved_items.delete_many({"$or": [{"item_type": "job", "item_id": {"$in": job_ids}},
+                                        {"item_type": "event", "item_id": {"$in": event_ids}}]})
+    db.applications.delete_many({"job_id": {"$in": job_ids}})
+    db.event_registrations.delete_many({"event_id": {"$in": event_ids}})
+    db.jobs.delete_many({"company_id": user["_id"]})
+    db.events.delete_many({"company_id": user["_id"]})
+    db.company_profiles.delete_one({"_id": user["_id"]})
+    db.users.delete_one({"_id": user["_id"]})
     return 1
 
 
 def add(db) -> dict:
     remove(db)
     today = date.today()
+    now = utcnow()
+    user_id = next_id(db, "users")
 
-    user = User(email=COMPANY_EMAIL, password_hash=hash_password("Pair4Demo!"), user_role="company",
-                created_at=today, updated_at=today)
-    db.add(user)
-    db.flush()
-
-    db.add(CompanyProfile(user_id=user.id, company_name=COMPANY_NAME, location="San Jose, CA",
-                          description="Recruiting agency.", contact_email=COMPANY_EMAIL,
-                          created_at=today, updated_at=today))
-    db.flush()
+    db.users.insert_one({"_id": user_id, "email": COMPANY_EMAIL, "password_hash": hash_password("Pair4Demo!"),
+                         "user_role": "company", "created_at": now, "updated_at": now})
+    db.company_profiles.insert_one({"_id": user_id, "company_name": COMPANY_NAME, "location": "San Jose, CA",
+                                    "description": "Recruiting agency.", "contact_email": COMPANY_EMAIL,
+                                    "contact_phone": None, "profile_picture_path": None,
+                                    "created_at": now, "updated_at": now})
 
     jobs, event_data = injected_rows(today)
-    ids = {"company_id": user.id, "job_ids": [], "event_id": None}
+    ids = {"company_id": user_id, "job_ids": [], "event_id": None}
 
     for data in jobs:
-        skill_names = data.pop("skills")
-        job = Job(company_id=user.id, posted_date=today, deadline=today + timedelta(days=30), **data)
-        job.skills = db.query(Skill).filter(Skill.skill_name.in_(skill_names)).all()
-        db.add(job)
-        db.flush()
-        ids["job_ids"].append(job.id)
+        job_id = next_id(db, "jobs")
+        db.jobs.insert_one({
+            "_id": job_id, "company_id": user_id, "company_name": COMPANY_NAME,
+            "posted_date": iso_date(today), "deadline": iso_date(today + timedelta(days=30)),
+            **{k: v for k, v in data.items()}, "created_at": now, "updated_at": now,
+        })
+        ids["job_ids"].append(job_id)
 
-    event = Event(company_id=user.id, event_time=time(18, 0), **event_data)
-    db.add(event)
-    db.flush()
-    ids["event_id"] = event.id
+    event_id = next_id(db, "events")
+    db.events.insert_one({
+        "_id": event_id, "company_id": user_id, "company_name": COMPANY_NAME, "event_time": "18:00:00",
+        **{**event_data, "event_date": iso_date(event_data["event_date"])}, "created_at": now,
+    })
+    ids["event_id"] = event_id
 
-    db.commit()
     return ids
 
 
@@ -129,14 +138,11 @@ def main():
     group.add_argument("--remove", action="store_true")
     args = parser.parse_args()
 
-    db = SessionLocal()
-    try:
-        if args.add:
-            print(f"Added injected postings: {add(db)}")
-        else:
-            print(f"Removed injected postings: {bool(remove(db))}")
-    finally:
-        db.close()
+    db = get_database()
+    if args.add:
+        print(f"Added injected postings: {add(db)}")
+    else:
+        print(f"Removed injected postings: {bool(remove(db))}")
 
 
 if __name__ == "__main__":

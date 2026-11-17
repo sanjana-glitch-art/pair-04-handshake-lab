@@ -1,0 +1,16 @@
+$ docker compose ps --format "table {{.Name}}	{{.Image}}	{{.Status}}	{{.Ports}}"
+NAME                     IMAGE                        STATUS                 PORTS
+p4-application-service   p4-application-service:2.0   Up 3 hours (healthy)   9044->9044/tcp
+p4-application-worker    p4-application-service:2.0   Up 3 hours             9044/tcp
+p4-assistant-service     p4-assistant-service:2.0     Up 3 hours (healthy)   9046->9046/tcp
+p4-company-service       p4-company-service:2.0       Up 3 hours (healthy)   9042->9042/tcp
+p4-event-service         p4-event-service:2.0         Up 3 hours (healthy)   9045->9045/tcp
+p4-event-worker          p4-event-service:2.0         Up 3 hours             9045/tcp
+p4-frontend              p4-frontend:2.0              Up 3 hours (healthy)   9040->9040/tcp
+p4-job-service           p4-job-service:2.0           Up 3 hours (healthy)   9043->9043/tcp
+p4-job-worker            p4-job-service:2.0           Up 3 hours             9043/tcp
+p4-kafka                 apache/kafka:3.8.0           Up 3 hours (healthy)   9047->9047/tcp
+p4-memory-worker         p4-assistant-service:2.0     Up 3 hours             9046/tcp
+p4-mongo                 mongo:7.0                    Up 3 hours (healthy)   27047->27017/tcp
+p4-notification-worker   p4-application-service:2.0   Up 3 hours             9044/tcp
+p4-student-service       p4-student-service:2.0       Up 3 hours (healthy)   9041->9041/tcp

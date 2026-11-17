@@ -1,0 +1,17 @@
+$ docker start p4-mysql
+$ backend/.venv/bin/python database/migrate_mysql_to_mongo.py --target p4_handshake_migrated
+Migrated MySQL p4_handshake -> MongoDB p4_handshake_migrated
+table                  MySQL rows  collection             documents
+users                         254  users                        254
+company_profiles               50  company_profiles              50
+student_profiles              204  student_profiles             204
+skills                         30  skills                        30
+student_skills                834  student_profiles.skills  embedded
+jobs                          320  jobs                         320
+job_skills                    842  jobs.skills             embedded
+applications                 1501  applications                1501
+events                        110  events                       110
+event_registrations           600  event_registrations          600
+student_preferences           140  student_preferences          140
+saved_items                     0  saved_items                    0
+resume files copied to GridFS: 2

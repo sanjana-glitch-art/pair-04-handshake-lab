@@ -12,8 +12,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
-from app.database import SessionLocal
-from app.models import Application, Event, Job
+from app.database import get_database
 
 
 client = TestClient(app)
@@ -92,43 +91,38 @@ def test_student_directory_filters(student):
     assert rows and all("Data Science" in r["major"] and "Python" in r["skills"] for r in rows)
 
 
+def _application(company_id_filter):
+    db = get_database()
+    job_ids = [j["_id"] for j in db.jobs.find({"company_id": company_id_filter}, {"_id": 1})]
+    return db.applications.find_one({"job_id": {"$in": job_ids}})
+
+
 def test_company_sees_only_its_own_applications(company):
-    db = SessionLocal()
-    try:
-        other = db.query(Application).join(Job).filter(Job.company_id != 1).first()
-        mine = db.query(Application).join(Job).filter(Job.company_id == 1).first()
-    finally:
-        db.close()
+    other = _application({"$ne": 1})
+    mine = _application(1)
 
-    assert client.get(f"/employer/applications/{other.id}", headers=company).status_code == 404
-    assert client.get(f"/employer/applications/{other.id}/resume", headers=company).status_code == 404
+    assert client.get(f"/employer/applications/{other['_id']}", headers=company).status_code == 404
+    assert client.get(f"/employer/applications/{other['_id']}/resume", headers=company).status_code == 404
 
-    resume = client.get(f"/employer/applications/{mine.id}/resume", headers=company)
+    resume = client.get(f"/employer/applications/{mine['_id']}/resume", headers=company)
     assert resume.status_code == 200 and resume.headers["content-type"] == "application/pdf"
 
 
 def test_status_update_validates_value(company):
-    db = SessionLocal()
-    try:
-        mine = db.query(Application).join(Job).filter(Job.company_id == 1).first()
-    finally:
-        db.close()
+    mine = _application(1)
 
-    url = f"/employer/applications/{mine.id}/status"
+    url = f"/employer/applications/{mine['_id']}/status"
     assert client.patch(url, json={"status": "Hired"}, headers=company).status_code == 422
-    assert client.patch(url, json={"status": mine.status}, headers=company).json()["status"] == mine.status
+    assert client.patch(url, json={"status": mine["status"]}, headers=company).json()["status"] == mine["status"]
 
 
 def test_event_registrations_are_owner_only(company):
-    db = SessionLocal()
-    try:
-        other_event = db.query(Event).filter(Event.company_id != 1).first()
-        my_event = db.query(Event).filter(Event.company_id == 1).first()
-    finally:
-        db.close()
+    db = get_database()
+    other_event = db.events.find_one({"company_id": {"$ne": 1}})
+    my_event = db.events.find_one({"company_id": 1})
 
-    assert client.get(f"/employer/events/{other_event.id}/registrations", headers=company).status_code == 404
-    assert client.get(f"/employer/events/{my_event.id}/registrations", headers=company).status_code == 200
+    assert client.get(f"/employer/events/{other_event['_id']}/registrations", headers=company).status_code == 404
+    assert client.get(f"/employer/events/{my_event['_id']}/registrations", headers=company).status_code == 200
 
 
 def test_picture_upload_rejects_non_images(student):
@@ -138,3 +132,67 @@ def test_picture_upload_rejects_non_images(student):
         headers=student,
     )
     assert response.status_code == 400
+
+
+# ---------------------------------------------------------------- Lab 2
+
+def test_logout_ends_the_session():
+    headers = token("noprefs.student@example.edu")
+    assert client.get("/students/me", headers=headers).status_code == 200
+    assert client.post("/auth/logout", headers=headers).status_code == 204
+    assert client.get("/students/me", headers=headers).status_code == 401
+
+
+def test_expired_session_is_rejected():
+    from datetime import timedelta
+
+    from app.database import utcnow
+
+    headers = token("noprefs.student@example.edu")
+    session_id = get_database().sessions.find_one(sort=[("created_at", -1)])["_id"]
+    get_database().sessions.update_one({"_id": session_id}, {"$set": {"expires_at": utcnow() - timedelta(seconds=1)}})
+    assert client.get("/students/me", headers=headers).status_code == 401
+
+
+def test_passwords_are_bcrypt_hashes():
+    user = get_database().users.find_one({"email": "demo.student@example.edu"})
+    assert user["password_hash"].startswith("$2") and "Pair4Demo!" not in user["password_hash"]
+
+
+def test_application_goes_through_the_queue(student):
+    """
+    POST /applications answers 202 and the application worker stores it
+    (inline when KAFKA_ENABLED=false, from Kafka otherwise).
+    """
+
+    import time
+
+    db = get_database()
+    student_id = db.users.find_one({"email": "demo.student@example.edu"})["_id"]
+    applied = {a["job_id"] for a in db.applications.find({"student_id": student_id})}
+    job = db.jobs.find_one({"deadline": {"$gte": date.today().isoformat()}, "_id": {"$nin": list(applied)}})
+
+    response = client.post(
+        "/applications",
+        data={"job_id": str(job["_id"])},
+        files={"resume": ("cv.pdf", b"%PDF-1.4 test resume", "application/pdf")},
+        headers=student,
+    )
+    assert response.status_code == 202, response.text
+    application_id = response.json()["application_id"]
+
+    for _ in range(50):
+        if db.applications.find_one({"_id": application_id}):
+            break
+        time.sleep(0.1)
+    stored = db.applications.find_one({"_id": application_id})
+    assert stored and stored["status"] == "Pending"
+
+    again = client.post(
+        "/applications",
+        data={"job_id": str(job["_id"])},
+        files={"resume": ("cv.pdf", b"%PDF-1.4 test resume", "application/pdf")},
+        headers=student,
+    )
+    assert again.status_code == 409
+    db.applications.delete_one({"_id": application_id})

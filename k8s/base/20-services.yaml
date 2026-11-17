@@ -1,0 +1,296 @@
+# The six Handshake API services. Each has a ClusterIP Service, so other pods
+# reach it by name (p4-<name>-service.p4-handshake.svc.cluster.local).
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: p4-student-service
+  namespace: p4-handshake
+  labels: {app: p4-student-service, tier: api}
+spec:
+  replicas: 2
+  selector: {matchLabels: {app: p4-student-service}}
+  template:
+    metadata: {labels: {app: p4-student-service, tier: api}}
+    spec:
+      containers:
+        - name: student
+          image: p4-student-service:2.0
+          imagePullPolicy: IfNotPresent
+          ports: [{containerPort: 9041}]
+          envFrom:
+            - configMapRef: {name: p4-config}
+            - secretRef: {name: p4-secrets}
+          env:
+            - {name: SERVICE_NAME, value: student}
+          resources:
+            requests: {cpu: 250m, memory: 256Mi}
+            limits: {cpu: "1", memory: 512Mi}
+          readinessProbe:
+            httpGet: {path: /health/ready, port: 9041}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet: {path: /health, port: 9041}
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            # Generous: on a laptop the local model can starve the CPU for minutes.
+            timeoutSeconds: 10
+            failureThreshold: 6
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: p4-student-service
+  namespace: p4-handshake
+  labels: {app: p4-student-service}
+spec:
+  type: ClusterIP
+  selector: {app: p4-student-service}
+  ports: [{name: http, port: 9041, targetPort: 9041}]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: p4-company-service
+  namespace: p4-handshake
+  labels: {app: p4-company-service, tier: api}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: p4-company-service}}
+  template:
+    metadata: {labels: {app: p4-company-service, tier: api}}
+    spec:
+      containers:
+        - name: company
+          image: p4-company-service:2.0
+          imagePullPolicy: IfNotPresent
+          ports: [{containerPort: 9042}]
+          envFrom:
+            - configMapRef: {name: p4-config}
+            - secretRef: {name: p4-secrets}
+          env:
+            - {name: SERVICE_NAME, value: company}
+          resources:
+            requests: {cpu: 100m, memory: 192Mi}
+            limits: {cpu: "500m", memory: 384Mi}
+          readinessProbe:
+            httpGet: {path: /health/ready, port: 9042}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet: {path: /health, port: 9042}
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            # Generous: on a laptop the local model can starve the CPU for minutes.
+            timeoutSeconds: 10
+            failureThreshold: 6
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: p4-company-service
+  namespace: p4-handshake
+  labels: {app: p4-company-service}
+spec:
+  type: ClusterIP
+  selector: {app: p4-company-service}
+  ports: [{name: http, port: 9042, targetPort: 9042}]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: p4-job-service
+  namespace: p4-handshake
+  labels: {app: p4-job-service, tier: api}
+spec:
+  replicas: 2
+  selector: {matchLabels: {app: p4-job-service}}
+  template:
+    metadata: {labels: {app: p4-job-service, tier: api}}
+    spec:
+      containers:
+        - name: job
+          image: p4-job-service:2.0
+          imagePullPolicy: IfNotPresent
+          ports: [{containerPort: 9043}]
+          envFrom:
+            - configMapRef: {name: p4-config}
+            - secretRef: {name: p4-secrets}
+          env:
+            - {name: SERVICE_NAME, value: job}
+          resources:
+            requests: {cpu: 250m, memory: 256Mi}
+            limits: {cpu: "1", memory: 512Mi}
+          readinessProbe:
+            httpGet: {path: /health/ready, port: 9043}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet: {path: /health, port: 9043}
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            # Generous: on a laptop the local model can starve the CPU for minutes.
+            timeoutSeconds: 10
+            failureThreshold: 6
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: p4-job-service
+  namespace: p4-handshake
+  labels: {app: p4-job-service}
+spec:
+  type: ClusterIP
+  selector: {app: p4-job-service}
+  ports: [{name: http, port: 9043, targetPort: 9043}]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: p4-application-service
+  namespace: p4-handshake
+  labels: {app: p4-application-service, tier: api}
+spec:
+  replicas: 2
+  selector: {matchLabels: {app: p4-application-service}}
+  template:
+    metadata: {labels: {app: p4-application-service, tier: api}}
+    spec:
+      containers:
+        - name: application
+          image: p4-application-service:2.0
+          imagePullPolicy: IfNotPresent
+          ports: [{containerPort: 9044}]
+          envFrom:
+            - configMapRef: {name: p4-config}
+            - secretRef: {name: p4-secrets}
+          env:
+            - {name: SERVICE_NAME, value: application}
+          resources:
+            requests: {cpu: 250m, memory: 256Mi}
+            limits: {cpu: "1", memory: 512Mi}
+          readinessProbe:
+            httpGet: {path: /health/ready, port: 9044}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet: {path: /health, port: 9044}
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            # Generous: on a laptop the local model can starve the CPU for minutes.
+            timeoutSeconds: 10
+            failureThreshold: 6
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: p4-application-service
+  namespace: p4-handshake
+  labels: {app: p4-application-service}
+spec:
+  type: ClusterIP
+  selector: {app: p4-application-service}
+  ports: [{name: http, port: 9044, targetPort: 9044}]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: p4-event-service
+  namespace: p4-handshake
+  labels: {app: p4-event-service, tier: api}
+spec:
+  replicas: 2
+  selector: {matchLabels: {app: p4-event-service}}
+  template:
+    metadata: {labels: {app: p4-event-service, tier: api}}
+    spec:
+      containers:
+        - name: event
+          image: p4-event-service:2.0
+          imagePullPolicy: IfNotPresent
+          ports: [{containerPort: 9045}]
+          envFrom:
+            - configMapRef: {name: p4-config}
+            - secretRef: {name: p4-secrets}
+          env:
+            - {name: SERVICE_NAME, value: event}
+          resources:
+            requests: {cpu: 250m, memory: 256Mi}
+            limits: {cpu: "1", memory: 512Mi}
+          readinessProbe:
+            httpGet: {path: /health/ready, port: 9045}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet: {path: /health, port: 9045}
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            # Generous: on a laptop the local model can starve the CPU for minutes.
+            timeoutSeconds: 10
+            failureThreshold: 6
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: p4-event-service
+  namespace: p4-handshake
+  labels: {app: p4-event-service}
+spec:
+  type: ClusterIP
+  selector: {app: p4-event-service}
+  ports: [{name: http, port: 9045, targetPort: 9045}]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: p4-assistant-service
+  namespace: p4-handshake
+  labels: {app: p4-assistant-service, tier: api}
+spec:
+  replicas: 2
+  selector: {matchLabels: {app: p4-assistant-service}}
+  template:
+    metadata: {labels: {app: p4-assistant-service, tier: api}}
+    spec:
+      containers:
+        - name: assistant
+          image: p4-assistant-service:2.0
+          imagePullPolicy: IfNotPresent
+          ports: [{containerPort: 9046}]
+          envFrom:
+            - configMapRef: {name: p4-config}
+            - secretRef: {name: p4-secrets}
+          env:
+            - {name: SERVICE_NAME, value: assistant}
+          resources:
+            requests: {cpu: 250m, memory: 384Mi}
+            limits: {cpu: "1", memory: 768Mi}
+          readinessProbe:
+            httpGet: {path: /health/ready, port: 9046}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet: {path: /health, port: 9046}
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            # Generous: on a laptop the local model can starve the CPU for minutes.
+            timeoutSeconds: 10
+            failureThreshold: 6
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: p4-assistant-service
+  namespace: p4-handshake
+  labels: {app: p4-assistant-service}
+spec:
+  type: ClusterIP
+  selector: {app: p4-assistant-service}
+  ports: [{name: http, port: 9046, targetPort: 9046}]

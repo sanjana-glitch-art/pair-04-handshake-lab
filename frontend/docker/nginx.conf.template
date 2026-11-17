@@ -1,0 +1,49 @@
+# API gateway: /api/<path> is routed to the service that owns <path>.
+# Variables + resolver make nginx re-resolve service names (Compose DNS
+# or Kubernetes service discovery) instead of failing at start-up.
+resolver ${DNS_RESOLVER} valid=10s ipv6=off;
+
+server {
+    listen ${NGINX_PORT};
+    server_name _;
+    client_max_body_size 6m;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    location = /healthz { return 200 "ok\n"; }
+
+    set $student     http://${STUDENT_SERVICE};
+    set $company     http://${COMPANY_SERVICE};
+    set $job         http://${JOB_SERVICE};
+    set $application http://${APPLICATION_SERVICE};
+    set $event       http://${EVENT_SERVICE};
+    set $assistant   http://${ASSISTANT_SERVICE};
+
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_http_version 1.1;
+
+    location /api/auth/company/        { rewrite ^/api/(.*)$ /$1 break; proxy_pass $company; }
+    location /api/auth/                { rewrite ^/api/(.*)$ /$1 break; proxy_pass $student; }
+    location /api/students             { rewrite ^/api/(.*)$ /$1 break; proxy_pass $student; }
+    location /api/preferences          { rewrite ^/api/(.*)$ /$1 break; proxy_pass $student; }
+    location /api/saved                { rewrite ^/api/(.*)$ /$1 break; proxy_pass $student; }
+    location /api/uploads/             { rewrite ^/api/(.*)$ /$1 break; proxy_pass $student; }
+    location /api/employer/profile     { rewrite ^/api/(.*)$ /$1 break; proxy_pass $company; }
+    location /api/jobs                 { rewrite ^/api/(.*)$ /$1 break; proxy_pass $job; }
+    location /api/employer/jobs        { rewrite ^/api/(.*)$ /$1 break; proxy_pass $job; }
+    location /api/applications         { rewrite ^/api/(.*)$ /$1 break; proxy_pass $application; }
+    location /api/employer/applications { rewrite ^/api/(.*)$ /$1 break; proxy_pass $application; }
+    location /api/events               { rewrite ^/api/(.*)$ /$1 break; proxy_pass $event; }
+    location /api/employer/events      { rewrite ^/api/(.*)$ /$1 break; proxy_pass $event; }
+    location /api/assistant {
+        rewrite ^/api/(.*)$ /$1 break;
+        proxy_pass $assistant;
+        proxy_read_timeout 600s;
+        proxy_send_timeout 600s;
+    }
+
+    # React router: every other path is the single-page app.
+    location / { try_files $uri $uri/ /index.html; }
+}

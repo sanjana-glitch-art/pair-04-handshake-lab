@@ -15,3 +15,8 @@ backend/uploads/*
 frontend/dist/
 .DS_Store
 docs/report/build/
+loadtest/results/*.jtl
+loadtest/results/*.log
+loadtest/data/apply_*.csv
+docs/report/lab2/build/
+jmeter.log

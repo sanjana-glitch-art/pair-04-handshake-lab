@@ -1,48 +1,38 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import {
-  getEvents,
+  emptyEventFilters,
+  eventFiltersChanged,
+  eventFiltersReset,
+  fetchEvents,
   registerForEvent,
-} from "../services/api.js";
+  selectEventFilters,
+  selectEvents,
+  selectEventsError,
+  selectEventsLoading,
+  selectEventsMessage,
+} from "../store/slices/eventsSlice.js";
 
 function Events() {
-  const [events, setEvents] = useState([]);
-  const [filters, setFilters] = useState({
-    search: "",
-    city: "",
-  });
+  const dispatch = useDispatch();
+  const events = useSelector(selectEvents);
+  const filters = useSelector(selectEventFilters);
+  const loading = useSelector(selectEventsLoading);
+  const error = useSelector(selectEventsError);
+  const message = useSelector(selectEventsMessage);
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
-
-  async function loadEvents(currentFilters = {}) {
-    try {
-      setLoading(true);
-      setError("");
-
-      const data = await getEvents(currentFilters);
-
-      setEvents(Array.isArray(data) ? data : []);
-    } catch (err) {
-      setError(err.message || "Unable to load events.");
-      setEvents([]);
-    } finally {
-      setLoading(false);
-    }
+  function loadEvents(currentFilters = {}) {
+    dispatch(fetchEvents(currentFilters));
   }
 
   useEffect(() => {
-    loadEvents({});
+    loadEvents(filters);
   }, []);
 
   function handleChange(event) {
     const { name, value } = event.target;
-
-    setFilters((previousFilters) => ({
-      ...previousFilters,
-      [name]: value,
-    }));
+    dispatch(eventFiltersChanged({ [name]: value }));
   }
 
   function handleSubmit(event) {
@@ -51,33 +41,12 @@ function Events() {
   }
 
   function handleReset() {
-    const emptyFilters = {
-      search: "",
-      city: "",
-    };
-
-    setFilters(emptyFilters);
-    loadEvents(emptyFilters);
+    dispatch(eventFiltersReset());
+    loadEvents(emptyEventFilters);
   }
 
-  async function handleRegister(eventId) {
-    try {
-      setError("");
-      setMessage("");
-
-      const result = await registerForEvent(eventId);
-
-      setMessage(
-        result.message || "Successfully registered for the event."
-      );
-      setEvents((current) =>
-        current.map((item) =>
-          item.id === eventId ? { ...item, is_registered: true } : item
-        )
-      );
-    } catch (err) {
-      setError(err.message || "Unable to register for the event.");
-    }
+  function handleRegister(eventId) {
+    dispatch(registerForEvent(eventId));
   }
 
   // Event dates are calendar dates; parse them as local time so

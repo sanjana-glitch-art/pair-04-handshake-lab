@@ -1,0 +1,92 @@
+# kind cluster p4-handshake, 2026-11-13 01:08 PST
+
+$ kubectl get nodes
+NAME                         STATUS   ROLES           AGE     VERSION
+p4-handshake-control-plane   Ready    control-plane   2m21s   v1.37.0
+p4-handshake-worker          Ready    <none>          2m12s   v1.37.0
+
+$ kubectl get namespace p4-handshake
+NAME           STATUS   AGE
+p4-handshake   Active   111s
+
+$ kubectl -n p4-handshake get deploy,statefulset,job
+NAME                                     READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/p4-application-service   2/2     2            2           111s
+deployment.apps/p4-application-worker    2/2     2            2           111s
+deployment.apps/p4-assistant-service     2/2     2            2           111s
+deployment.apps/p4-company-service       1/1     1            1           111s
+deployment.apps/p4-event-service         2/2     2            2           111s
+deployment.apps/p4-event-worker          1/1     1            1           111s
+deployment.apps/p4-frontend              2/2     2            2           111s
+deployment.apps/p4-job-service           2/2     2            2           111s
+deployment.apps/p4-job-worker            1/1     1            1           111s
+deployment.apps/p4-memory-worker         1/1     1            1           111s
+deployment.apps/p4-notification-worker   1/1     1            1           111s
+deployment.apps/p4-student-service       2/2     2            2           111s
+
+NAME                        READY   AGE
+statefulset.apps/p4-kafka   1/1     111s
+statefulset.apps/p4-mongo   1/1     111s
+
+NAME                        STATUS     COMPLETIONS   DURATION   AGE
+job.batch/p4-kafka-topics   Complete   1/1           86s        111s
+
+$ kubectl -n p4-handshake get pods -o wide
+NAME                                      READY   STATUS      RESTARTS      AGE    IP            NODE                  NOMINATED NODE   READINESS GATES
+p4-application-service-6566484846-hqttt   1/1     Running     0             111s   10.244.1.5    p4-handshake-worker   <none>           <none>
+p4-application-service-6566484846-rcl2m   1/1     Running     0             111s   10.244.1.2    p4-handshake-worker   <none>           <none>
+p4-application-worker-599c8b6b9d-cwfp4    1/1     Running     3 (78s ago)   111s   10.244.1.3    p4-handshake-worker   <none>           <none>
+p4-application-worker-599c8b6b9d-gdzwz    1/1     Running     3 (79s ago)   111s   10.244.1.4    p4-handshake-worker   <none>           <none>
+p4-assistant-service-7f58dbf494-6tfdk     1/1     Running     0             111s   10.244.1.6    p4-handshake-worker   <none>           <none>
+p4-assistant-service-7f58dbf494-q767k     1/1     Running     0             111s   10.244.1.11   p4-handshake-worker   <none>           <none>
+p4-company-service-75c89c88dd-nghdz       1/1     Running     0             111s   10.244.1.7    p4-handshake-worker   <none>           <none>
+p4-event-service-f777c64c7-5ngj5          1/1     Running     0             111s   10.244.1.9    p4-handshake-worker   <none>           <none>
+p4-event-service-f777c64c7-xbt7c          1/1     Running     0             111s   10.244.1.8    p4-handshake-worker   <none>           <none>
+p4-event-worker-7d8b974748-ffmhf          1/1     Running     3 (78s ago)   111s   10.244.1.10   p4-handshake-worker   <none>           <none>
+p4-frontend-5d7cc899d9-5nxgh              1/1     Running     0             110s   10.244.1.12   p4-handshake-worker   <none>           <none>
+p4-frontend-5d7cc899d9-rnmcb              1/1     Running     0             110s   10.244.1.13   p4-handshake-worker   <none>           <none>
+p4-job-service-597f57696c-6mrb4           1/1     Running     0             110s   10.244.1.18   p4-handshake-worker   <none>           <none>
+p4-job-service-597f57696c-q6xh2           1/1     Running     0             110s   10.244.1.17   p4-handshake-worker   <none>           <none>
+p4-job-worker-654bb5675-rskvh             1/1     Running     3 (72s ago)   110s   10.244.1.19   p4-handshake-worker   <none>           <none>
+p4-kafka-0                                1/1     Running     0             111s   10.244.1.24   p4-handshake-worker   <none>           <none>
+p4-kafka-topics-kllzr                     0/1     Completed   0             111s   10.244.1.16   p4-handshake-worker   <none>           <none>
+p4-memory-worker-df6b5c646-4nh7n          1/1     Running     3 (76s ago)   110s   10.244.1.20   p4-handshake-worker   <none>           <none>
+p4-mongo-0                                1/1     Running     0             111s   10.244.1.25   p4-handshake-worker   <none>           <none>
+p4-notification-worker-8f67cb5b-7nw7s     1/1     Running     3 (77s ago)   110s   10.244.1.21   p4-handshake-worker   <none>           <none>
+p4-student-service-85c4cb5557-4dm67       1/1     Running     0             109s   10.244.1.23   p4-handshake-worker   <none>           <none>
+p4-student-service-85c4cb5557-8d4rc       1/1     Running     0             109s   10.244.1.22   p4-handshake-worker   <none>           <none>
+
+$ kubectl -n p4-handshake get svc
+NAME                     TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)             AGE
+p4-application-service   ClusterIP      10.96.21.88     <none>        9044/TCP            111s
+p4-assistant-service     ClusterIP      10.96.208.105   <none>        9046/TCP            111s
+p4-company-service       ClusterIP      10.96.58.5      <none>        9042/TCP            111s
+p4-event-service         ClusterIP      10.96.185.215   <none>        9045/TCP            111s
+p4-frontend              LoadBalancer   10.96.102.94    <pending>     9040:30940/TCP      111s
+p4-job-service           ClusterIP      10.96.59.81     <none>        9043/TCP            111s
+p4-kafka                 ClusterIP      10.96.67.6      <none>        9092/TCP,9093/TCP   111s
+p4-mongo                 ClusterIP      None            <none>        27017/TCP           111s
+p4-student-service       ClusterIP      10.96.157.146   <none>        9041/TCP            111s
+
+$ kubectl -n p4-handshake get hpa
+NAME                     REFERENCE                           TARGETS              MINPODS   MAXPODS   REPLICAS   AGE
+p4-application-service   Deployment/p4-application-service   cpu: <unknown>/70%   2         5         2          111s
+p4-job-service           Deployment/p4-job-service           cpu: <unknown>/70%   2         5         2          111s
+p4-student-service       Deployment/p4-student-service       cpu: <unknown>/70%   2         5         2          111s
+
+$ kubectl -n p4-handshake exec p4-kafka-0 -- kafka-topics.sh --list
+__consumer_offsets
+p4.application.created
+p4.application.created.dlq
+p4.application.status_changed
+p4.application.status_changed.dlq
+p4.application.updated
+p4.application.updated.dlq
+p4.assistant.interaction
+p4.assistant.interaction.dlq
+p4.assistant.memory_consolidate
+p4.assistant.memory_consolidate.dlq
+p4.event.registration_created
+p4.event.registration_created.dlq
+p4.job.created
+p4.job.created.dlq

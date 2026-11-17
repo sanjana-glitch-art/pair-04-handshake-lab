@@ -1,32 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { getRegisteredEvents } from "../services/api.js";
+import {
+  fetchRegisteredEvents,
+  selectEventsError,
+  selectRegistrations,
+  selectRegistrationsLoading,
+} from "../store/slices/eventsSlice.js";
 
 function RegisteredEvents() {
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const dispatch = useDispatch();
+  const events = useSelector(selectRegistrations);
+  const loading = useSelector(selectRegistrationsLoading);
+  const error = useSelector(selectEventsError);
 
   useEffect(() => {
-    async function loadRegisteredEvents() {
-      try {
-        setLoading(true);
-        setError("");
-
-        const data = await getRegisteredEvents();
-
-        setEvents(Array.isArray(data) ? data : []);
-      } catch (err) {
-        setError(
-          err.message || "Unable to load registered events."
-        );
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadRegisteredEvents();
-  }, []);
+    dispatch(fetchRegisteredEvents());
+  }, [dispatch]);
 
   function formatDate(value) {
     return new Date(`${value}T00:00:00`).toLocaleDateString();

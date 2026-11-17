@@ -103,3 +103,79 @@ The first assistant route had the model write tool calls as JSON text instead of
  *Fix:* it was replaced by the hand-built loop in app/assistant/ (commit 8278d55).
 
 
+
+---
+
+# Lab 2
+
+**Assistant used:** Claude Code (Anthropic, Claude Opus 5.5) in the Claude
+desktop app, working in the local clone on branch `lab2`.
+
+**What it was used for (Karthik)**
+
+- Planning the service split (six FastAPI apps sharing one code base) and
+  the MySQL → MongoDB document model; rewriting every route, the
+  assistant tools, the seed generator, and the tests for MongoDB; the
+  MySQL → MongoDB migration script.
+- Writing the Dockerfiles, Docker Compose file, nginx gateway, Kubernetes
+  manifests (kind and AWS overlays), and the ECR/EKS scripts.
+- Kafka producers, the shared consumer runner (manual offset commits,
+  bounded retries, dead-letter topics), the idempotent handlers, and the
+  failure-case demo script.
+- The three memory layers, consolidation consumer, compaction, token
+  reporting, tracing, the guardrail additions, and the harness.
+- Redux slices and the page refactors; the JMeter plan, data, and analysis.
+- Drafting README, RUN_LOG, METRICS, and the report.
+
+Every change was run: the pytest suite, the harness, the Compose stack,
+the kind cluster, the Kafka demos, and the browser. The numbers in
+METRICS.md and the report come from those runs.
+
+**Incorrect output 1: the rule-based consolidation merged a contradiction as a duplicate**
+
+- *What it produced:* the first rule-based pass treated "Wants internships
+  paying at least $30 per hour" and "... at least $35 per hour" as
+  near-duplicates (same words) and kept the **older $30** text with the
+  newer date. The fallback path then stored that list without checking it again.
+- *How it was detected:* reading `docs/evidence/memory_consolidation.txt`:
+  the verifier had flagged "minimum_pay kept the older value", but the
+  stored list still said $30.
+- *Fix:* entries whose slot values differ are never merged as duplicates
+  (`deterministic_consolidation`, `verify_consolidation` in
+  `memory.py`), and the stored result is always re-verified
+  (`final_problems`). Re-run: 64 → 24 entries, `final_problems=[]`, $35 kept.
+
+**Incorrect output 2: the Kafka "worker killed" demo reported a lost message that was not lost**
+
+- *What it produced:* the first demo script checked 60 s after killing the
+  worker and printed "application 1504: NOT stored".
+- *How it was detected:* the next demo in the same log showed that student+job
+  pair already stored, and the worker log showed the redelivered message
+  being processed ~37 s (session timeout) + 25 s (demo pause) after the kill.
+- *Fix:* the script now polls until the row appears and prints how long it
+  took (77 s in the final run); RUN_LOG explains the rebalance delay.
+
+**Incorrect output 3: the Kubernetes readiness probe for MongoDB took the whole cluster down under load**
+
+- *What it produced:* a `mongosh` exec readiness probe with default
+  timeouts and a headless Service.
+- *How it was detected:* while the local model was consolidating memory,
+  pods restarted in a loop; logs showed `p4-mongo...: Name or service not
+  known` — the probe timed out, the pod was marked not ready, and its DNS
+  record disappeared.
+- *Fix:* a TCP readiness probe, `publishNotReadyAddresses: true` on the
+  headless Service, and longer liveness timeouts for the API pods
+  (`k8s/base/10-mongo.yaml`, `20-services.yaml`).
+
+**Incorrect output 4: the assistant answered "saved preferences" from memory instead of the database**
+
+- *What it produced:* the Lab 1 tool-required check did not include the
+  word "preferences", so after memory injection the model answered
+  "Preferred city: Milpitas, $35/hour" (learned memory) instead of the saved
+  preferences (San Jose, $25/hour), without calling a tool.
+- *How it was detected:* checking the Redux assistant page in the browser.
+- *Fix:* preference questions now require `get_student_preferences`
+  (`NEEDS_TOOL`, `PREFERENCES_ONLY` in `agent.py`); the re-run repaired
+  itself and answered from the tool (RUN_LOG, Redux section).
+
+<!-- Sanjana: add your Lab 2 assistant use and one incorrect output here. -->

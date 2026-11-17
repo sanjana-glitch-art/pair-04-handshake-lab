@@ -1,0 +1,3498 @@
+{
+  "requests": 51,
+  "share_of_latency": {
+    "model_inference": 99.9,
+    "queue_and_worker": 0.07,
+    "database": 0.02,
+    "tool_execution": 0.01
+  },
+  "mean_ms": {
+    "model_inference": 60462.0,
+    "database": 14.4,
+    "tool_execution": 3.9,
+    "queue_and_worker": 44.5
+  },
+  "dominant_stage_counts": {
+    "model_inference": 50,
+    "queue_and_worker": 1
+  },
+  "example_success": {
+    "trace_id": "11faa0bdfbfc4a5790f5d176ebc6a5ad",
+    "ok": true,
+    "request_ms": 64518.14,
+    "status": "final",
+    "breakdown_ms": {
+      "model_inference": 64446.6,
+      "database": 16.2,
+      "tool_execution": 2.8,
+      "queue_and_worker": 47.8
+    },
+    "dominant": "model_inference",
+    "stages": [
+      {
+        "service": "assistant",
+        "stage": "model.inference",
+        "ms": 23410.4,
+        "ok": true
+      },
+      {
+        "service": "assistant",
+        "stage": "db.get_student_preferences",
+        "ms": 4.03,
+        "ok": true
+      },
+      {
+        "service": "assistant",
+        "stage": "tool.get_student_preferences",
+        "ms": 5.08,
+        "ok": true
+      },
+      {
+        "service": "assistant",
+        "stage": "model.inference",
+        "ms": 19383.4,
+        "ok": true
+      },
+      {
+        "service": "assistant",
+        "stage": "db.search_jobs",
+        "ms": 12.13,
+        "ok": true
+      },
+      {
+        "service": "assistant",
+        "stage": "tool.search_jobs",
+        "ms": 13.91,
+        "ok": true
+      },
+      {
+        "service": "assistant",
+        "stage": "model.inference",
+        "ms": 21652.78,
+        "ok": true
+      },
+      {
+        "service": "assistant",
+        "stage": "kafka.publish",
+        "ms": 1.02,
+        "ok": true
+      },
+      {
+        "service": "assistant",
+        "stage": "assistant.request",
+        "ms": 64518.14,
+        "ok": true
+      },
+      {
+        "service": "memory-worker",
+        "stage": "kafka.queue_wait",
+        "ms": 20.4,
+        "ok": true
+      },
+      {
+        "service": "memory-worker",
+        "stage": "worker.process",
+        "ms": 26.4,
+        "ok": true
+      }
+    ]
+  },
+  "example_failure": {
+    "trace_id": "dbbadc258e8e4bf4b176242b237a6777",
+    "ok": false,
+    "request_ms": 90.76,
+    "status": "model_error",
+    "breakdown_ms": {
+      "model_inference": 1.7,
+      "queue_and_worker": 77.9,
+      "tool_execution": 0.0,
+      "database": 0.0
+    },
+    "dominant": "queue_and_worker",
+    "stages": [
+      {
+        "service": "assistant",
+        "stage": "model.inference",
+        "ms": 1.71,
+        "ok": false
+      },
+      {
+        "service": "assistant",
+        "stage": "kafka.publish",
+        "ms": 30.71,
+        "ok": true
+      },
+      {
+        "service": "assistant",
+        "stage": "assistant.request",
+        "ms": 90.76,
+        "ok": false
+      },
+      {
+        "service": "memory-worker",
+        "stage": "kafka.queue_wait",
+        "ms": 26.05,
+        "ok": true
+      },
+      {
+        "service": "memory-worker",
+        "stage": "worker.process",
+        "ms": 21.1,
+        "ok": true
+      }
+    ]
+  },
+  "traces": [
+    {
+      "trace_id": "11faa0bdfbfc4a5790f5d176ebc6a5ad",
+      "ok": true,
+      "request_ms": 64518.14,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 64446.6,
+        "database": 16.2,
+        "tool_execution": 2.8,
+        "queue_and_worker": 47.8
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 23410.4,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.get_student_preferences",
+          "ms": 4.03,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.get_student_preferences",
+          "ms": 5.08,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 19383.4,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 12.13,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 13.91,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 21652.78,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 1.02,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 64518.14,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 20.4,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 26.4,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "044e230b9aff423bbb66cab6c729cd3e",
+      "ok": true,
+      "request_ms": 71980.12,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 71896.7,
+        "database": 16.2,
+        "tool_execution": 6.3,
+        "queue_and_worker": 37.3
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 36824.81,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.get_student_preferences",
+          "ms": 3.3,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.get_student_preferences",
+          "ms": 3.8,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 12353.3,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_events",
+          "ms": 12.9,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_events",
+          "ms": 18.73,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 22718.63,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.95,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 71980.12,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 19.45,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 16.91,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "8556c2d1755c4c70b6842c281d2be37f",
+      "ok": true,
+      "request_ms": 51745.7,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 51700.6,
+        "database": 9.7,
+        "tool_execution": 1.6,
+        "queue_and_worker": 29.5
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 23508.88,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 9.73,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 11.36,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 28191.68,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.47,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 51745.7,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 14.52,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 14.48,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "6a69170994aa45e6a7cf2b92db80b488",
+      "ok": true,
+      "request_ms": 59592.8,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 59540.4,
+        "database": 7.0,
+        "tool_execution": 6.3,
+        "queue_and_worker": 35.6
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 30336.18,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 7.05,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 13.31,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 29204.25,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 1.79,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 59592.8,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 13.2,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 20.66,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "cbba00e01ac24db69e887ed48b173d1a",
+      "ok": true,
+      "request_ms": 106282.44,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 106243.3,
+        "database": 13.3,
+        "tool_execution": 1.2,
+        "queue_and_worker": 39.2
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 36777.74,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 13.3,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 14.54,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 69465.56,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 1.46,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 106282.44,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 16.45,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 21.3,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "a5c47b58f6f64ab58c5bc53b72925e67",
+      "ok": true,
+      "request_ms": 80556.77,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 80538.7,
+        "database": 1.6,
+        "tool_execution": 2.3,
+        "queue_and_worker": 27.9
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 32956.77,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_events",
+          "ms": 1.59,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_events",
+          "ms": 3.93,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 47581.9,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.27,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 80556.77,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 16.97,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 10.64,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "63fbee5e17ad405da245e893393f8d70",
+      "ok": true,
+      "request_ms": 69106.69,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 69039.1,
+        "database": 13.2,
+        "tool_execution": 1.8,
+        "queue_and_worker": 48.3
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 22623.85,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 13.16,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 14.99,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 46415.27,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.51,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 69106.69,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 22.72,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 25.08,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "fb935a14f1bc4fe08b95b59f7b75d5e2",
+      "ok": true,
+      "request_ms": 81817.39,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 81756.2,
+        "database": 9.1,
+        "tool_execution": 1.5,
+        "queue_and_worker": 38.5
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 43612.33,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 9.08,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 10.61,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 38143.88,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.87,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 81817.39,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 19.04,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 18.64,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "4d864a3140f242caad056c3852e1cefc",
+      "ok": true,
+      "request_ms": 61560.81,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 61527.3,
+        "database": 9.2,
+        "tool_execution": 1.3,
+        "queue_and_worker": 34.7
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 34345.33,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 9.15,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 10.44,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 27181.97,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.43,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 61560.81,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 16.55,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 17.75,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "95a7fa9e6be74e81bf9b5474be3ea84d",
+      "ok": true,
+      "request_ms": 144166.81,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 144057.3,
+        "database": 18.5,
+        "tool_execution": 22.8,
+        "queue_and_worker": 49.0
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 29722.7,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.get_student_preferences",
+          "ms": 4.44,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.get_student_preferences",
+          "ms": 5.16,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 20831.26,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_events",
+          "ms": 3.17,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_events",
+          "ms": 7.46,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_events",
+          "ms": 1.32,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_events",
+          "ms": 28.82,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 41452.72,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_events",
+          "ms": 2.12,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_events",
+          "ms": 7.36,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 52050.66,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 1.2,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 144166.81,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 24.74,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 23.05,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "d203700042d64d00bfad3ff9637b0f3c",
+      "ok": true,
+      "request_ms": 65973.86,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 65942.7,
+        "database": 8.5,
+        "tool_execution": 1.1,
+        "queue_and_worker": 34.5
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 25142.72,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 8.5,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 9.55,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 40799.98,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 1.48,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 65973.86,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 15.25,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 17.82,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "8a697c75d4a14f9c98c8d894139ac2c8",
+      "ok": true,
+      "request_ms": 46445.98,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 46404.4,
+        "database": 5.7,
+        "tool_execution": 4.7,
+        "queue_and_worker": 32.0
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 13984.8,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.get_student_preferences",
+          "ms": 3.44,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.get_student_preferences",
+          "ms": 3.95,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 13669.33,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_events",
+          "ms": 2.28,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_events",
+          "ms": 6.43,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 18750.31,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.31,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 46445.98,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 17.19,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 14.46,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "ebcddc2091584a67843a8efc9debb884",
+      "ok": true,
+      "request_ms": 42985.05,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 42949.6,
+        "database": 5.6,
+        "tool_execution": 1.0,
+        "queue_and_worker": 42.8
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 16695.91,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 5.57,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 6.55,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 26253.67,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.75,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 42985.05,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 20.0,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 22.08,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "cd65f19a20b14cd1acd54dadad18d393",
+      "ok": true,
+      "request_ms": 46085.91,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 46051.4,
+        "database": 6.1,
+        "tool_execution": 0.6,
+        "queue_and_worker": 51.0
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 12499.78,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 6.06,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 6.69,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 33551.66,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.6,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 46085.91,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 22.82,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 27.59,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "3c37f92de30046f3a0653283dd6f08ec",
+      "ok": true,
+      "request_ms": 61256.52,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 61204.3,
+        "database": 7.0,
+        "tool_execution": 0.8,
+        "queue_and_worker": 26.4
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 21610.85,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 7.03,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 7.78,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 39593.41,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.44,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 61256.52,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 14.3,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 11.63,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "45b9097406b342eaa974d194b3e4c222",
+      "ok": true,
+      "request_ms": 55865.98,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 55825.9,
+        "database": 2.1,
+        "tool_execution": 4.7,
+        "queue_and_worker": 39.0
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 14703.76,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_events",
+          "ms": 2.11,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_events",
+          "ms": 6.84,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 41122.13,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.53,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 55865.98,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 26.82,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 11.61,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "d85a8b95983d47049e7af3f46dd7acfb",
+      "ok": true,
+      "request_ms": 88682.51,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 88639.6,
+        "database": 12.3,
+        "tool_execution": 1.0,
+        "queue_and_worker": 41.8
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 56472.17,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 12.31,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 13.29,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 32167.43,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.42,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 88682.51,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 23.47,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 17.93,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "73a2a314447e4c54b06812b1f1e2225d",
+      "ok": true,
+      "request_ms": 53996.65,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 53947.9,
+        "database": 10.3,
+        "tool_execution": 1.8,
+        "queue_and_worker": 24.1
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 11120.36,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 10.34,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 12.11,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 42827.56,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.5,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 53996.65,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 13.37,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 10.26,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "c0cb5c3f8da74cc0a25cedd3a4ea71e9",
+      "ok": true,
+      "request_ms": 60917.05,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 60871.7,
+        "database": 18.4,
+        "tool_execution": 1.3,
+        "queue_and_worker": 31.6
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 17224.78,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 18.38,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 19.67,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 43646.94,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.47,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 60917.05,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 13.83,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 17.32,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "5eb8ff819df940a69ad3817b75fa9083",
+      "ok": true,
+      "request_ms": 65922.14,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 65865.8,
+        "database": 2.4,
+        "tool_execution": 3.8,
+        "queue_and_worker": 57.7
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 31697.65,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_events",
+          "ms": 2.37,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_events",
+          "ms": 6.13,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 34168.19,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 1.63,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 65922.14,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 19.44,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 36.64,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "8658c5e6fc724d8a9000d23ce91f1c36",
+      "ok": true,
+      "request_ms": 159313.97,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 159239.7,
+        "database": 27.1,
+        "tool_execution": 4.2,
+        "queue_and_worker": 64.7
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 45268.99,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 27.13,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 31.31,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 113970.67,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 1.01,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 159313.97,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 35.3,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 28.38,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "22390390b9184481b98b87a972cf074e",
+      "ok": true,
+      "request_ms": 112068.27,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 111852.0,
+        "database": 129.5,
+        "tool_execution": 14.2,
+        "queue_and_worker": 42.9
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 39005.91,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.get_student_preferences",
+          "ms": 126.03,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.get_student_preferences",
+          "ms": 132.49,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 38933.45,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_events",
+          "ms": 3.47,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_events",
+          "ms": 11.19,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 33912.6,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.56,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 112068.27,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 19.77,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 22.61,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "86da7d5fbe244667b4bfbd134acd3bd0",
+      "ok": true,
+      "request_ms": 33455.9,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 33401.2,
+        "database": 8.8,
+        "tool_execution": 1.2,
+        "queue_and_worker": 30.6
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 13830.58,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 8.83,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 9.98,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 19570.65,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.27,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 33455.9,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 15.25,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 15.12,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "a23555448e4f47cbbfec9aeb6db9aba1",
+      "ok": true,
+      "request_ms": 35284.48,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 35242.9,
+        "database": 16.6,
+        "tool_execution": 2.7,
+        "queue_and_worker": 27.8
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 9573.44,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 16.6,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 19.28,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 25669.43,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.52,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 35284.48,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 12.23,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 15.05,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "04cf5064c0ab4e7f97e3e037466f7f32",
+      "ok": true,
+      "request_ms": 46951.64,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 46921.1,
+        "database": 5.0,
+        "tool_execution": 0.5,
+        "queue_and_worker": 43.9
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 16233.0,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 5.05,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 5.55,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 30688.06,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.52,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 46951.64,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 22.75,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 20.62,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "bd935c12c96d4ca9acd5f24aa7fd4718",
+      "ok": true,
+      "request_ms": 42787.64,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 42737.4,
+        "database": 3.3,
+        "tool_execution": 2.0,
+        "queue_and_worker": 28.7
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 11340.66,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_events",
+          "ms": 3.3,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_events",
+          "ms": 5.34,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 31396.76,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.74,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 42787.64,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 10.61,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 17.38,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "26250d226ad24c548fe16151801066f9",
+      "ok": true,
+      "request_ms": 69480.39,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 69433.2,
+        "database": 14.7,
+        "tool_execution": 1.0,
+        "queue_and_worker": 33.1
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 43838.94,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 14.65,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 15.68,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 25594.22,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 1.84,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 69480.39,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 17.35,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 13.89,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "3d130e6b65374405b64a924486f97ebd",
+      "ok": true,
+      "request_ms": 42104.27,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 42052.8,
+        "database": 7.5,
+        "tool_execution": 0.9,
+        "queue_and_worker": 29.2
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 8950.27,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 7.54,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 8.46,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 33102.49,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.73,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 42104.27,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 16.71,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 11.76,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "6dd888bc4f084454b0aaeb22ae641a9f",
+      "ok": true,
+      "request_ms": 47732.68,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 47692.1,
+        "database": 11.6,
+        "tool_execution": 1.2,
+        "queue_and_worker": 21.5
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 13020.32,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 11.55,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 12.72,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 34671.79,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.44,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 47732.68,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 10.4,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 10.68,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "f95cdacbb5cf4084b1dedbb3391f0867",
+      "ok": true,
+      "request_ms": 51281.91,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 51231.3,
+        "database": 6.8,
+        "tool_execution": 6.1,
+        "queue_and_worker": 36.4
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 24752.73,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_events",
+          "ms": 6.75,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_events",
+          "ms": 12.86,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 26478.58,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 1.47,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 51281.91,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 17.49,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 17.42,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "0881ab48b9c84bedbc4b99ba4c972ab2",
+      "ok": true,
+      "request_ms": 47266.77,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 47222.5,
+        "database": 11.9,
+        "tool_execution": 1.3,
+        "queue_and_worker": 29.9
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 12343.28,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 11.92,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 13.18,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 34879.26,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 1.74,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 47266.77,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 18.39,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 9.74,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "379460b9df1340899f06bcd829a00e1c",
+      "ok": true,
+      "request_ms": 40026.85,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 39981.0,
+        "database": 6.5,
+        "tool_execution": 6.4,
+        "queue_and_worker": 25.4
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 12081.33,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.get_student_preferences",
+          "ms": 3.31,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.get_student_preferences",
+          "ms": 3.71,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 11996.76,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_events",
+          "ms": 3.16,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_events",
+          "ms": 9.14,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 15902.95,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.36,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 40026.85,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 12.48,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 12.54,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "d561e9168f26413da484e9fbc79c619e",
+      "ok": true,
+      "request_ms": 37023.25,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 36960.2,
+        "database": 25.9,
+        "tool_execution": 3.3,
+        "queue_and_worker": 42.8
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 14831.23,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 25.93,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 29.2,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 22128.93,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.62,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 37023.25,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 18.4,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 23.74,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "d11ed7a25d1146afbd1e39b5a63c6ebd",
+      "ok": true,
+      "request_ms": 105842.32,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 105800.1,
+        "database": 8.2,
+        "tool_execution": 1.0,
+        "queue_and_worker": 53.3
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 13167.93,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 8.15,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 9.19,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 92632.2,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.75,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 105842.32,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 17.75,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 34.77,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "70434bf491344c65bc96aa4be76de3b8",
+      "ok": true,
+      "request_ms": 62322.17,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 62206.9,
+        "database": 21.9,
+        "tool_execution": 1.3,
+        "queue_and_worker": 53.8
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 28769.08,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 21.93,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 23.27,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 33437.8,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 1.27,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 62322.17,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 28.05,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 24.5,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "b336ac60fce74ecb90ef8867116b848c",
+      "ok": true,
+      "request_ms": 43381.2,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 43335.0,
+        "database": 3.5,
+        "tool_execution": 4.9,
+        "queue_and_worker": 27.2
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 11531.89,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_events",
+          "ms": 3.45,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_events",
+          "ms": 8.35,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 31803.14,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.54,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 43381.2,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 14.05,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 12.57,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "20d150972abb4b3aae08a4c71f10f494",
+      "ok": true,
+      "request_ms": 67944.71,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 67884.8,
+        "database": 16.4,
+        "tool_execution": 0.9,
+        "queue_and_worker": 24.3
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 43595.05,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 16.37,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 17.32,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 24289.77,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.41,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 67944.71,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 11.01,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 12.9,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "0505dbbedf364f70832963de542d34fd",
+      "ok": true,
+      "request_ms": 42492.65,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 42453.3,
+        "database": 8.0,
+        "tool_execution": 1.1,
+        "queue_and_worker": 38.2
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 8711.14,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 7.99,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 9.13,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 33742.19,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 3.0,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 42492.65,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 21.87,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 13.34,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "f97cfe13ccec4db6b448fdb5da21881f",
+      "ok": true,
+      "request_ms": 48105.2,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 48035.6,
+        "database": 7.2,
+        "tool_execution": 0.9,
+        "queue_and_worker": 28.9
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 13309.54,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 7.23,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 8.15,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 34726.07,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 1.06,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 48105.2,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 13.93,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 13.86,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "61bdc4a1fc0141649c20cc50e6dcdf88",
+      "ok": true,
+      "request_ms": 50917.2,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 50874.5,
+        "database": 2.6,
+        "tool_execution": 9.0,
+        "queue_and_worker": 42.4
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 25400.4,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_events",
+          "ms": 2.65,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_events",
+          "ms": 11.64,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 25474.09,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.69,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 50917.2,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 18.97,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 22.69,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "a65349b4620d44888da0043e236664ba",
+      "ok": true,
+      "request_ms": 46840.42,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 46806.2,
+        "database": 8.2,
+        "tool_execution": 2.1,
+        "queue_and_worker": 29.3
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 12205.3,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 8.16,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 10.26,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 34600.91,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.89,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 46840.42,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 16.14,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 12.26,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "2c39868751534a04ac85082171cb720f",
+      "ok": true,
+      "request_ms": 39510.06,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 39433.3,
+        "database": 5.0,
+        "tool_execution": 5.3,
+        "queue_and_worker": 28.0
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 11986.96,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.get_student_preferences",
+          "ms": 3.48,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.get_student_preferences",
+          "ms": 4.43,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 11534.13,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_events",
+          "ms": 1.48,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_events",
+          "ms": 5.79,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 15912.2,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.63,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 39510.06,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 16.5,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 10.85,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "fae5fe1424954a3783ce980a1c0416b0",
+      "ok": true,
+      "request_ms": 40305.44,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 39920.0,
+        "database": 13.5,
+        "tool_execution": 1.0,
+        "queue_and_worker": 326.4
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 15116.31,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 13.46,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 14.43,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 24803.68,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 15.17,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 40305.44,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 130.57,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 180.62,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "2447e7d91ada48ebb7dcd27d570d8b0e",
+      "ok": true,
+      "request_ms": 44047.43,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 43319.2,
+        "database": 127.2,
+        "tool_execution": 6.8,
+        "queue_and_worker": 86.8
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 13189.61,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 127.15,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 133.98,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 30129.63,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 38.42,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 44047.43,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 31.14,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 17.28,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "5021ff3d78e24fa38b6a226a1487812e",
+      "ok": true,
+      "request_ms": 51349.3,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 51311.3,
+        "database": 6.6,
+        "tool_execution": 0.9,
+        "queue_and_worker": 35.0
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 17093.72,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 6.58,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 7.52,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 34217.59,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.31,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 51349.3,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 16.91,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 17.78,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "b4c9911b924045c8b354c8a386546f51",
+      "ok": true,
+      "request_ms": 57692.54,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 57556.0,
+        "database": 12.6,
+        "tool_execution": 37.0,
+        "queue_and_worker": 51.2
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 17332.38,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_events",
+          "ms": 12.59,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_events",
+          "ms": 49.56,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 40223.65,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.67,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 57692.54,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 27.18,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 23.33,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "2d4b0ecde9384598a850fd6a2bce7445",
+      "ok": true,
+      "request_ms": 80393.84,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 80352.1,
+        "database": 7.5,
+        "tool_execution": 0.8,
+        "queue_and_worker": 41.8
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 51228.74,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 7.47,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 8.28,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 29123.32,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.53,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 80393.84,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 17.78,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 23.53,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "ed5896d53900469eadd2529719b4abce",
+      "ok": true,
+      "request_ms": 47800.1,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 47749.8,
+        "database": 8.2,
+        "tool_execution": 0.8,
+        "queue_and_worker": 31.4
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 9333.03,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 8.22,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 9.0,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 38416.76,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.77,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 47800.1,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 13.87,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 16.8,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "dacbf8342ca74088b547e0cf40ed3675",
+      "ok": true,
+      "request_ms": 55798.63,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 55739.4,
+        "database": 9.3,
+        "tool_execution": 1.9,
+        "queue_and_worker": 44.5
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 14642.39,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_jobs",
+          "ms": 9.27,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_jobs",
+          "ms": 11.19,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 41097.01,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 1.35,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 55798.63,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 17.27,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 25.86,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "0e8e0eb80d0c47aeab9a7ee049361312",
+      "ok": true,
+      "request_ms": 58412.34,
+      "status": "final",
+      "breakdown_ms": {
+        "model_inference": 58367.8,
+        "database": 2.2,
+        "tool_execution": 7.0,
+        "queue_and_worker": 25.5
+      },
+      "dominant": "model_inference",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 27199.17,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "db.search_events",
+          "ms": 2.16,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "tool.search_events",
+          "ms": 9.17,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 31168.59,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 0.83,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 58412.34,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 12.43,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 12.23,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "trace_id": "dbbadc258e8e4bf4b176242b237a6777",
+      "ok": false,
+      "request_ms": 90.76,
+      "status": "model_error",
+      "breakdown_ms": {
+        "model_inference": 1.7,
+        "queue_and_worker": 77.9,
+        "tool_execution": 0.0,
+        "database": 0.0
+      },
+      "dominant": "queue_and_worker",
+      "stages": [
+        {
+          "service": "assistant",
+          "stage": "model.inference",
+          "ms": 1.71,
+          "ok": false
+        },
+        {
+          "service": "assistant",
+          "stage": "kafka.publish",
+          "ms": 30.71,
+          "ok": true
+        },
+        {
+          "service": "assistant",
+          "stage": "assistant.request",
+          "ms": 90.76,
+          "ok": false
+        },
+        {
+          "service": "memory-worker",
+          "stage": "kafka.queue_wait",
+          "ms": 26.05,
+          "ok": true
+        },
+        {
+          "service": "memory-worker",
+          "stage": "worker.process",
+          "ms": 21.1,
+          "ok": true
+        }
+      ]
+    }
+  ]
+}
