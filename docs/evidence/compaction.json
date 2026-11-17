@@ -1,0 +1,135 @@
+{
+  "student": "noprefs.student@example.edu",
+  "conversation_id": "62e1306def2e4470a83fd786e81252ad",
+  "first_search_ids": [
+    244,
+    229
+  ],
+  "compaction": {
+    "tokens_before": 2151,
+    "tokens_after": 1114,
+    "messages_before": 10,
+    "messages_after": 2,
+    "method": "model"
+  },
+  "summary": "Compacted the conversation: about 2151 -> 1114 tokens (10 -> 2 messages).\n\nStudent preferences:  \n- No preferences saved.  \n- Profile: city=Santa Clara, major=Data Science, graduation year=2028  \n\nJobs discussed:  \n- id=244 | Data Science Intern | Lakeside Insurance | Santa Clara, CA | internship | $43-$49/hr | deadline 2026-12-19 | skills: Machine Learning, SQL, Statistics  \n- id=229 | Data Science Intern | Beacon Civic Tech | Santa Clara, CA | internship | $42-$51/hr | deadline 2027-02-04 | skills: Pandas, Python, SQL, Statistics  \n\nCompanies:  \n- Lakeside Insurance  \n- Beacon Civic Tech  \n\nEvents discussed:  \n- id=20 | Golden Gate Fintech Data Science Networking Night | 2026-12-05 | eligibility: Data Science and Statistics students  \n- id=29 | Sierra Sensor Co Startup Pitch Night | 2026-12-08 | eligibility: All majors  \n- id=44 | DataBridge Analytics Machine Learning Paper Reading Group | 2026-12-17 | eligibility: Computer Science and Data Science students  \n- id=30 | Skyline Games Startup Pitch Night | 2026-12-20 | eligibility: All majors  \n- id=63 | Pinecrest Security Bay Area Tech Career Fair | 2026-12-26 | eligibility: All majors  \n- id=107 | Alder Insights Startup Pitch Night | 2026-12-28 | eligibility: All majors  \n\nApplications and saved items:  \n- None saved  \n\nCurrent request:  \n- User asked: \"Any career fairs or workshops next month?\"  \n- Assistant asked: \"Would you like to save any of these events, or refine the search further?\"  \n- No unanswered questions.",
+  "recall_target_item_id": 244,
+  "recall_correct": true,
+  "turns": [
+    {
+      "message": "Find data science internships.",
+      "seconds": 81.7,
+      "status": "final",
+      "usage": {
+        "prompt_tokens": 2019,
+        "completion_tokens": 450,
+        "total_tokens": 2469,
+        "context_window": 12288,
+        "context_percent": 20.1,
+        "warning": false,
+        "model_calls": 3
+      },
+      "compaction": null,
+      "trace_id": "6aa030c0640e468083fe973a83927643",
+      "tool_calls": [
+        {
+          "name": "get_student_preferences",
+          "arguments": {}
+        },
+        {
+          "name": "search_jobs",
+          "arguments": {
+            "sort_by": "deadline",
+            "category": "internship",
+            "city": "Santa Clara",
+            "title": "data science",
+            "limit": 5
+          }
+        }
+      ],
+      "answer": "Here are 2 data science internships in Santa Clara, CA (your preferred city) matching your major:\n\n1. **Data Science Intern** | Lakeside Insurance | $43-$49/hr (hourly) | Deadline: 2026-12-19  \n   Skills: Machine Learning, SQL, Statistics  \n\n2. **Data Science Intern** | Beacon Civic Tech | $42-$51/hr (hourly) | Deadline: 2027-02-04  \n   Skills: Pandas, Python, SQL, Statistics  \n\nWould you like to save any of these, or refine the search further?",
+      "pending_action": null
+    },
+    {
+      "message": "Any career fairs or workshops next month?",
+      "seconds": 131.9,
+      "status": "final",
+      "usage": {
+        "prompt_tokens": 2860,
+        "completion_tokens": 694,
+        "total_tokens": 3554,
+        "context_window": 12288,
+        "context_percent": 28.9,
+        "warning": false,
+        "model_calls": 2
+      },
+      "compaction": null,
+      "trace_id": "5bc2b3bf7ee84952a7af052eae57bc12",
+      "tool_calls": [
+        {
+          "name": "search_events",
+          "arguments": {
+            "major": "Data Science",
+            "city": "Santa Clara",
+            "date_from": "2026-12-01",
+            "date_to": "2026-12-31",
+            "eligible_only": true
+          }
+        }
+      ],
+      "answer": "Here are 6 career events in Santa Clara, CA next month (2026-12-01 to 2026-12-31) relevant to your major (Data Science):\n\n1. **Golden Gate Fintech Data Science Networking Night**  \n   \ud83d\udcc5 2026-12-05 10:00 | \ud83d\udccd Mission City Tech Hall  \n   \u2705 Eligible: Data Science/Statistics students  \n   Summary: Connect with data scientists about projects and careers.\n\n2. **DataBridge Analytics Machine Learning Paper Reading Group**  \n   \ud83d\udcc5 2026-12-17 16:30 | \ud83d\udccd Mission City Tech Hall  \n   \u2705 Eligible: Computer Science/Data Science students  \n   Summary: Discuss ML papers with researchers.\n\n3. **Pinecrest Security Bay Area Tech Career Fair**  \n   \ud83d\udcc5 2026-12-26 16:30 | \ud83d\udccd Santa Clara University  \n   \u2705 Eligible: All majors  \n   Summary: Meet recruiters for internships and new grads.\n\n4. **Skyline Games Startup Pitch Night**  \n   \ud83d\udcc5 2026-12-20 14:00 | \ud83d\udccd Santa Clara University  \n   \u2705 Eligible: All majors  \n   Summary: Founders pitch companies and recruit early hires.\n\n5. **Alder Insights Startup Pitch Night**  \n   \ud83d\udcc5 2026-12-28 10:30 | \ud83d\udccd Santa Clara University  \n   \u2705 Eligible: All majors  \n   Summary: Founders pitch companies and recruit early hires.\n\n6. **Sierra Sensor Co Startup Pitch Night**  \n   \ud83d\udcc5 2026-12-08 10:00 | \ud83d\udccd Mission City Tech Hall  \n   \u2705 Eligible: All majors  \n   Summary: Founders pitch companies and recruit early hires.\n\nWould you like to save any of these events, or refine the search further?",
+      "pending_action": null
+    },
+    {
+      "message": "/compact",
+      "seconds": 51.5,
+      "status": "compacted",
+      "usage": {
+        "prompt_tokens": 1114,
+        "completion_tokens": 0,
+        "total_tokens": 1114,
+        "context_window": 12288,
+        "context_percent": 9.1,
+        "warning": false,
+        "model_calls": 0
+      },
+      "compaction": {
+        "tokens_before": 2151,
+        "tokens_after": 1114,
+        "messages_before": 10,
+        "messages_after": 2,
+        "method": "model"
+      },
+      "trace_id": "7bf923185fd340fb94c6607cced68bf4",
+      "tool_calls": [],
+      "answer": "Compacted the conversation: about 2151 -> 1114 tokens (10 -> 2 messages).\n\nStudent preferences:  \n- No preferences saved.  \n- Profile: city=Santa Clara, major=Data Science, graduation year=2028  \n\nJobs discussed:  \n- id=244 | Data Science Intern | Lakeside Insurance | Santa Clara, CA | internship | $43-$49/hr | deadline 2026-12-19 | skills: Machine Learning, SQL, Statistics  \n- id=229 | Data Science Intern | Beacon Civic Tech | Santa Clara, CA | internship | $42-$51/hr | deadline 2027-02-04 | skills: Pandas, Python, SQL, Statistics  \n\nCompanies:  \n- Lakeside Insurance  \n- Beacon Civic Tech  \n\nEvents discussed:  \n- id=20 | Golden Gate Fintech Data Science Networking Night | 2026-12-05 | eligibility: Data Science and Statistics students  \n- id=29 | Sierra Sensor Co Startup Pitch Night | 2026-12-08 | eligibility: All majors  \n- id=44 | DataBridge Analytics Machine Learning Paper Reading Group | 2026-12-17 | eligibility: Computer Science and Data Science students  \n- id=30 | Skyline Games Startup Pitch Night | 2026-12-20 | eligibility: All majors  \n- id=63 | Pinecrest Security Bay Area Tech Career Fair | 2026-12-26 | eligibility: All majors  \n- id=107 | Alder Insights Startup Pitch Night | 2026-12-28 | eligibility: All majors  \n\nApplications and saved items:  \n- None saved  \n\nCurrent request:  \n- User asked: \"Any career fairs or workshops next month?\"  \n- Assistant asked: \"Would you like to save any of these events, or refine the search further?\"  \n- No unanswered questions.",
+      "pending_action": null
+    },
+    {
+      "message": "Save the first job you showed me.",
+      "seconds": 64.4,
+      "status": "confirmation_required",
+      "usage": {
+        "prompt_tokens": 2183,
+        "completion_tokens": 551,
+        "total_tokens": 2734,
+        "context_window": 12288,
+        "context_percent": 22.2,
+        "warning": false,
+        "model_calls": 1
+      },
+      "compaction": null,
+      "trace_id": "9ab211ed384743bc9654870d9ff8a1ce",
+      "tool_calls": [],
+      "answer": "This changes your saved items, so I need your OK first.",
+      "pending_action": {
+        "tool_name": "save_job_or_event",
+        "arguments": {
+          "item_id": 244,
+          "item_type": "job"
+        },
+        "description": "Save job #244 to your saved items"
+      }
+    }
+  ]
+}

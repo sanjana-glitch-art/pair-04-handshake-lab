@@ -1,0 +1,109 @@
+# Lab 2 AWS deployment evidence (captured 2026-11-16 20:07 PST)
+
+$ aws eks describe-cluster --name p4-handshake --region us-west-2 (status, version, endpoint access)
+-------------------------------------------------------------------------
+|                            DescribeCluster                            |
++----------+------------------------------------------------------------+
+|  arn     |  arn:aws:eks:us-west-2:396304498711:cluster/p4-handshake   |
+|  name    |  p4-handshake                                              |
+|  platform|  eks.76                                                    |
+|  status  |  ACTIVE                                                    |
+|  version |  1.31                                                      |
++----------+------------------------------------------------------------+
+
+$ aws eks describe-nodegroup --cluster-name p4-handshake --nodegroup-name p4-nodes
+----------------------------------------------------
+|                 DescribeNodegroup                |
++---------+-----------------+-----------+----------+
+| desired |  instanceTypes  |   name    | status   |
++---------+-----------------+-----------+----------+
+|  1      |  m7i.xlarge     |  p4-nodes |  ACTIVE  |
++---------+-----------------+-----------+----------+
+
+$ aws ecr describe-images (tag 2.0 in each p4-* repository)
+p4-student-service	2.0	2026-11-16T19:18:46.693000-08:00	sha256:703433ae569808144fe84516b7cc1ff68431a62392f192fa394df39b0173a693
+p4-company-service	2.0	2026-11-16T19:18:57.835000-08:00	sha256:62fbe68bdf20b8cd42293d21f810e7e35e49c5290c21cb3478c477adc7455fd8
+p4-job-service	2.0	2026-11-16T19:19:10.646000-08:00	sha256:cf10d38ad50123c4164ebacdc6362837fbb9105a12b6f8d0af33a69fb70756c7
+p4-application-service	2.0	2026-11-16T19:19:29.213000-08:00	sha256:21f889000cc25a11fb81b111511172264f24266a13afae52b5f48fd63cbfa5d2
+p4-event-service	2.0	2026-11-16T19:19:50.482000-08:00	sha256:57e7ffb0d5326521bab1b9b76f9e221334fa77a4f22fbcaa54f4e4164b523681
+p4-assistant-service	2.0	2026-11-16T19:20:03.232000-08:00	sha256:a60326bf50b74394178c1e4c9b081fb9f3ccbb0412c67ae450336e8e71d49c5a
+p4-frontend	2.0	2026-11-16T19:20:13.672000-08:00	sha256:ad1f9b122030726f14757c49c5fc2114dbbb6c8e38aae6e5e4ba2cd9bb46d2c6
+
+$ kubectl get nodes -o wide
+NAME                                          STATUS   ROLES    AGE   VERSION                INTERNAL-IP     EXTERNAL-IP    OS-IMAGE                        KERNEL-VERSION                    CONTAINER-RUNTIME
+ip-192-168-25-11.us-west-2.compute.internal   Ready    <none>   37m   v1.31.14-eks-9adbfea   192.168.25.11   35.94.78.225   Amazon Linux 2023.12.20261112   6.1.190-237.442.amzn2023.x86_64   containerd://2.3.7+unknown
+
+$ kubectl -n p4-handshake get pods,svc,hpa,pvc
+NAME                                          READY   STATUS      RESTARTS   AGE
+pod/p4-application-service-6b6fc9ccb4-5jljs   1/1     Running     0          33m
+pod/p4-application-service-6b6fc9ccb4-tb42f   1/1     Running     0          33m
+pod/p4-application-worker-5bf9c88868-65kxr    1/1     Running     0          21m
+pod/p4-application-worker-5bf9c88868-8k74d    1/1     Running     0          21m
+pod/p4-assistant-service-74696b4f54-l7c7g     1/1     Running     0          9m26s
+pod/p4-assistant-service-74696b4f54-qwrpt     1/1     Running     0          9m16s
+pod/p4-company-service-5b7ccc694-pzq67        1/1     Running     0          33m
+pod/p4-event-service-85f46cf867-kqzwv         1/1     Running     0          33m
+pod/p4-event-service-85f46cf867-tbkwv         1/1     Running     0          33m
+pod/p4-event-worker-66d45c978b-bwjbq          1/1     Running     0          21m
+pod/p4-frontend-59684ddbbf-lq9hq              1/1     Running     0          33m
+pod/p4-frontend-59684ddbbf-r44sm              1/1     Running     0          33m
+pod/p4-job-service-64b6d6fd9-jklcf            1/1     Running     0          33m
+pod/p4-job-service-64b6d6fd9-wzhtq            1/1     Running     0          33m
+pod/p4-job-worker-68bcbcfcd9-2mbcv            1/1     Running     0          21m
+pod/p4-kafka-0                                1/1     Running     0          22m
+pod/p4-kafka-topics-8nkwx                     0/1     Completed   0          22m
+pod/p4-memory-worker-7b7856d5c-bx7rm          1/1     Running     0          9m26s
+pod/p4-mongo-0                                1/1     Running     0          33m
+pod/p4-notification-worker-d9cd76cc4-zkb7s    1/1     Running     0          21m
+pod/p4-ollama-5c65b85685-hgdpj                1/1     Running     0          9m26s
+pod/p4-student-service-6f49f6c467-5vwb6       1/1     Running     0          33m
+pod/p4-student-service-6f49f6c467-b2c6r       1/1     Running     0          33m
+
+NAME                             TYPE           CLUSTER-IP       EXTERNAL-IP                                                              PORT(S)             AGE
+service/p4-application-service   ClusterIP      10.100.107.19    <none>                                                                   9044/TCP            33m
+service/p4-assistant-service     ClusterIP      10.100.195.54    <none>                                                                   9046/TCP            33m
+service/p4-company-service       ClusterIP      10.100.40.143    <none>                                                                   9042/TCP            33m
+service/p4-event-service         ClusterIP      10.100.181.77    <none>                                                                   9045/TCP            33m
+service/p4-frontend              LoadBalancer   10.100.90.250    a1c4a85197cfd4e9b92ba6b08899dada-156086449.us-west-2.elb.amazonaws.com   9040:30977/TCP      33m
+service/p4-job-service           ClusterIP      10.100.47.89     <none>                                                                   9043/TCP            33m
+service/p4-kafka                 ClusterIP      10.100.157.56    <none>                                                                   9092/TCP,9093/TCP   33m
+service/p4-mongo                 ClusterIP      None             <none>                                                                   27017/TCP           33m
+service/p4-ollama                ClusterIP      10.100.106.198   <none>                                                                   11434/TCP           33m
+service/p4-student-service       ClusterIP      10.100.69.42     <none>                                                                   9041/TCP            33m
+
+NAME                                                         REFERENCE                           TARGETS              MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/p4-application-service   Deployment/p4-application-service   cpu: <unknown>/70%   2         5         2          33m
+horizontalpodautoscaler.autoscaling/p4-job-service           Deployment/p4-job-service           cpu: <unknown>/70%   2         5         2          33m
+horizontalpodautoscaler.autoscaling/p4-student-service       Deployment/p4-student-service       cpu: <unknown>/70%   2         5         2          33m
+
+NAME                                    STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+persistentvolumeclaim/data-p4-kafka-0   Bound    pvc-06200f24-df1b-4b79-acb5-477b581d92e9   5Gi        RWO            gp3            <unset>                 33m
+persistentvolumeclaim/data-p4-mongo-0   Bound    pvc-c809fb5a-c2b0-44ef-b1c9-9ff5a405092f   5Gi        RWO            gp3            <unset>                 33m
+
+$ kubectl -n p4-handshake exec deploy/p4-ollama -- ollama list
+NAME          ID              SIZE      MODIFIED      
+qwen3:1.7b    8f68893c685c    1.4 GB    3 minutes ago    
+
+$ curl through the AWS load balancer (http://a1c4a85197cfd4e9b92ba6b08899dada-156086449.us-west-2.elb.amazonaws.com:9040)
+GET / -> 200 in 0.085215s
+POST /api/auth/login (noprefs.student@example.edu) -> token issued
+GET /api/jobs?keyword=data -> 200 in 0.121157s
+GET /api/events -> 200 in 0.108829s
+POST /api/assistant/chat "Show part-time jobs in Santa Clara." -> 200, status final, 190.4 s (qwen3:1.7b on CPU)
+Here are 5 part-time job results in Santa Clara:
+
+1. **ID 211** | Social Media Assistant | DataBridge Analytics | Santa Clara, CA | part_time | $26-$33/hr | deadline 2026-11-17 | skills: Communication, Figma, Marketing  
+   Summary: DataBridge Analytics is hiring a Social Media Assistant in Santa Clara. You will work with Communication, Figma, Marketing on real projects with a mentor.
+
+2. **ID 191** | Part-Time Web Developer | Cobalt DevTools | Santa Clara, CA | part_time | $27-$34/hr | deadline 2026-11-20 | skills: JavaScript, Node.js, React  
+   Summary: Cobalt DevTools is hiring a Part-Time Web Developer in Santa Clara. You will work with React, JavaScript, Node.js on real projects with a
+
+$ kubectl top node   (after restoring the EKS metrics-server add-on)
+NAME                                          CPU(cores)   CPU(%)   MEMORY(bytes)   MEMORY(%)   
+ip-192-168-25-11.us-west-2.compute.internal   139m         3%       7570Mi          51%         
+
+$ kubectl -n p4-handshake get hpa
+NAME                     REFERENCE                           TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+p4-application-service   Deployment/p4-application-service   cpu: 6%/70%   2         5         2          41m
+p4-job-service           Deployment/p4-job-service           cpu: 6%/70%   2         5         2          41m
+p4-student-service       Deployment/p4-student-service       cpu: 6%/70%   2         5         2          41m

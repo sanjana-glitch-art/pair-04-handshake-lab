@@ -1,0 +1,27 @@
+$ POST http://a1c4a85197cfd4e9b92ba6b08899dada-156086449.us-west-2.elb.amazonaws.com:9040/api/applications  (job_id=186, resume PDF; student noprefs.student@example.edu)
+{"message":"Application submitted successfully.","application_id":1501,"job_id":186,"status":"Pending","event_id":"adc94b3a3aeb4fbf9ae0d2ba7cb3e29f","trace_id":"aws-demo-1794889644"}
+HTTP 202 in 0.078077s
+
+$ kubectl -n p4-handshake logs deploy/p4-application-worker --since=1m | grep -i application.created
+{"ts": "2026-11-17T04:27:24", "level": "INFO", "service": "application-worker", "trace_id": "aws-demo-1794889644", "msg": "message handled", "topic": "p4.application.created", "partition": 0, "offset": 0, "outcome": "processed", "attempt": 1}
+{"ts": "2026-11-17T04:27:24", "level": "INFO", "service": "application-worker", "trace_id": null, "msg": "offset committed", "topic": "p4.application.created", "partition": 0, "offset": 1}
+
+$ GET http://a1c4a85197cfd4e9b92ba6b08899dada-156086449.us-west-2.elb.amazonaws.com:9040/api/applications/me  (the stored application)
+{
+ "id": 1501,
+ "job_id": 186,
+ "job_title": "Hardware Test Intern",
+ "company_name": "Keystone Analytics",
+ "resume_path": "uploads/ce64719268534fee9136392ec91e550a.pdf",
+ "applied_at": "2026-11-17T04:27:24.571000",
+ "status": "Pending"
+}
+
+$ kafka-consumer-groups.sh --describe --group p4-application-worker   (EKS)
+GROUP                  TOPIC                   PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG
+p4-application-worker  p4.application.updated  0          -               0               -
+p4-application-worker  p4.application.updated  1          -               0               -
+p4-application-worker  p4.application.created  1          -               0               -
+p4-application-worker  p4.application.created  0          1               1               0
+p4-application-worker  p4.application.created  2          -               0               -
+p4-application-worker  p4.application.updated  2          -               0               -

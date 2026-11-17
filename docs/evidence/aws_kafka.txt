@@ -1,0 +1,44 @@
+$ kubectl -n p4-handshake exec p4-kafka-0 -- kafka-topics.sh --list   (EKS)
+__consumer_offsets
+p4.application.created
+p4.application.created.dlq
+p4.application.status_changed
+p4.application.status_changed.dlq
+p4.application.updated
+p4.application.updated.dlq
+p4.assistant.interaction
+p4.assistant.interaction.dlq
+p4.assistant.memory_consolidate
+p4.assistant.memory_consolidate.dlq
+p4.event.registration_created
+p4.event.registration_created.dlq
+p4.job.created
+p4.job.created.dlq
+
+$ kubectl -n p4-handshake exec p4-kafka-0 -- kafka-consumer-groups.sh --describe --all-groups   (EKS)
+GROUP                   TOPIC                            PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG
+p4-application-worker   p4.application.updated           0          -               0               -
+p4-application-worker   p4.application.updated           1          -               0               -
+p4-application-worker   p4.application.created           1          -               0               -
+p4-application-worker   p4.application.created           0          -               0               -
+p4-application-worker   p4.application.created           2          -               0               -
+p4-application-worker   p4.application.updated           2          -               0               -
+GROUP                   TOPIC                            PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG
+p4-event-worker         p4.event.registration_created    2          -               0               -
+p4-event-worker         p4.event.registration_created    0          -               0               -
+p4-event-worker         p4.event.registration_created    1          -               0               -
+GROUP                   TOPIC                            PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG
+p4-job-worker           p4.job.created                   0          -               0               -
+p4-job-worker           p4.job.created                   2          -               0               -
+p4-job-worker           p4.job.created                   1          -               0               -
+GROUP                   TOPIC                            PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG
+p4-memory-worker        p4.assistant.memory_consolidate  2          -               0               -
+p4-memory-worker        p4.assistant.memory_consolidate  1          -               0               -
+p4-memory-worker        p4.assistant.memory_consolidate  0          -               0               -
+p4-memory-worker        p4.assistant.interaction         0          -               0               -
+p4-memory-worker        p4.assistant.interaction         1          3               3               0
+p4-memory-worker        p4.assistant.interaction         2          -               0               -
+GROUP                   TOPIC                            PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG
+p4-notification-worker  p4.application.status_changed    1          -               0               -
+p4-notification-worker  p4.application.status_changed    2          -               0               -
+p4-notification-worker  p4.application.status_changed    0          -               0               -

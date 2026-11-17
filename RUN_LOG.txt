@@ -160,3 +160,250 @@ wrote docs/report/LabPair-04_Lab1_Report.pdf
 # Web assistant checked in the browser: answer with tool trace; "Save the second one"
 # paused with Yes / No; "No" -> "The job was not saved..." and saved_items stayed at 0.
 # An expired JWT now redirects to /login instead of showing a raw 401 error.
+
+
+##############################################################################
+RUN_LOG — Lab 2, Pair 04 (PAIR=4, PORT_BASE=9040, prefix p4, SEED=4)
+Same machine. MongoDB 7.0, Kafka 3.8.0 (KRaft), kind v0.33.0 (Kubernetes v1.37).
+##############################################################################
+
+==============================================================================
+2026-11-13  MongoDB migration and seed
+==============================================================================
+
+$ docker compose up -d p4-mongo p4-kafka p4-kafka-init
+$ backend/.venv/bin/python database/seed/generate_seed.py --reset
+Seeded MongoDB p4_handshake with SEED=4, CITY_SET=['San Jose', 'Santa Clara', 'Milpitas'], anchor=2026-11-13
+  users 250 | company_profiles 50 | student_profiles 200 | skills 30 | jobs 320
+  applications 1500 | events 110 | event_registrations 600 | student_preferences 140
+  student_memory 64  (demo student, includes duplicates and contradictions)
+
+$ cd backend && KAFKA_ENABLED=false .venv/bin/python -m pytest -q
+42 passed            (38 Lab 1 tests ported to MongoDB + logout, session expiry, bcrypt, queued apply)
+
+==============================================================================
+2026-11-13  Docker Compose stack (Part 1.2)
+==============================================================================
+
+$ docker compose build            # 7 images: p4-{student,company,job,application,event,assistant}-service:2.0, p4-frontend:2.0
+$ docker compose up -d
+$ docker compose ps               # 6 services + frontend (healthy), 5 workers, p4-mongo, p4-kafka (healthy)
+# Through the gateway (http://localhost:9040/api/...): /students/me, /preferences/me, /jobs, /events,
+# /applications/me, /saved, /employer/{profile,jobs,events,applications} -> all 200.
+$ docker exec p4-assistant-service python -c "...urlopen('http://p4-student-service:9041/health')..."
+b'{"status":"healthy","service":"student"}'   ollama 200
+
+==============================================================================
+2026-11-13  Kubernetes on kind (Part 1.3) — full output: docs/evidence/k8s_local_kind.txt
+==============================================================================
+
+$ kind create cluster --config k8s/kind-cluster.yaml
+$ kind load docker-image p4-*-service:2.0 p4-frontend:2.0 --name p4-handshake
+$ ./scripts/k8s_secrets.sh                 # Secret p4-secrets built from .env, never committed
+$ kubectl apply -k k8s/overlays/local
+$ kubectl -n p4-handshake get pods        # 22 pods Running (6 services x2 except company x1,
+                                          # 5 workers, frontend x2, p4-mongo-0, p4-kafka-0)
+# Workers restarted 3 times while Kafka was starting (subscribe failed), then stayed up.
+$ curl -X POST http://localhost:9050/api/applications -F job_id=68 -F resume=@r.pdf ...
+{"message":"Application submitted successfully.","application_id":1501,...,"trace_id":"242644a6..."} [202]
+application-worker: "message handled" topic p4.application.created outcome processed, trace_id 242644a6...
+
+==============================================================================
+2026-11-13  Kafka failure cases (Part 2) — full output: docs/evidence/kafka_failures.log
+==============================================================================
+$ ./scripts/kafka_failure_demos.sh       # runs inside the kind cluster
+
+Case 1 — same event published twice
+  [1a] the SAME envelope (event_id 472acdb1..., key 52:320) published twice
+  [1b] a client retry: NEW event_id, same student+job key
+  worker: "event already processed; skipping" -> outcome duplicate_skipped        (1a)
+  worker: "application already stored; not inserting a duplicate" -> duplicate_skipped  (1b)
+  [1] result: applications with _id=1506: 1; with student 52 + job 320: 1
+  Fix/why it works: every envelope has an event_id; the worker records it in
+  processed_events after the write and skips ids it has seen. The write itself
+  uses unique keys (_id = application id, unique index student_id+job_id), so a
+  retry with a new event_id cannot create a second row either.
+
+Case 2 — worker killed during processing
+  published a message with a 25 s pause before the database write (application 1508)
+  worker p4-application-worker-...-gdjnn paused -> kubectl delete pod --grace-period=0 --force
+  check right after the kill: application 1508: NOT stored
+  stored 77 s after the kill:
+  [2] result: applications with _id=1508: 1; with student 51 + job 320: 1
+  Explanation: the event was NOT lost; it was reprocessed. enable.auto.commit=false and
+  the runner commits the offset only after handle_message returns (database write done).
+  The killed consumer never committed offset 4 on partition 1, so after the group
+  rebalance (session timeout ~45 s) the other replica re-read it, paused 25 s, wrote it,
+  then committed. Had the kill come after the write but before the commit, the
+  redelivered copy would have been skipped by the case-1 idempotency check.
+
+Case 3 — poison message
+  published invalid JSON on key poison:1, then a valid message on the same key (same partition)
+  worker: "message failed" attempt 1/3, 2/3, 3/3 (JSONDecodeError), backoff 0.5 s, 1 s
+  worker: "moved to dead-letter topic" p4.application.created.dlq
+  dead_letters: {topic p4.application.created, partition 0, offset 2, attempts 3, error JSONDecodeError ...}
+  p4.application.created.dlq: {"original_topic": ..., "attempts": 3, "raw": "{\"event_id\": \"poison-..."}
+  [3] valid message after the poison one: applications with _id=1509: 1
+  Fix/why it works: bounded retries (WORKER_MAX_ATTEMPTS=3, exponential backoff), then
+  the raw bytes and error go to <topic>.dlq and the dead_letters collection and the
+  offset is committed, so the partition does not stall behind the bad message.
+
+==============================================================================
+2026-11-13  Redux (Part 4) — checked in the browser against the kind cluster (http://localhost:9050)
+==============================================================================
+
+$ cd frontend && npm install @reduxjs/toolkit@2.5.0 react-redux@9.2.0 && npm run build
+Slices: auth, jobs (+ companies), applications, events (+ registrations), saved, assistant.
+# Asked "What are my saved preferences?", clicked Jobs in the sidebar while the model was
+# thinking, came back to AI Assistant: the user message and "Thinking..." were still there,
+# and the answer arrived into the store. Token meter: 2,582 prompt + 532 completion, 25.3% of 12,288.
+
+Incorrect output found during this check:
+  The first answer listed "Preferred city: Milpitas, Minimum pay: $35/hour" — values from
+  learned memory (memory fixture), not the saved preferences (San Jose, internship, $25/hr).
+  No tool was called: "preferences" was not in NEEDS_TOOL, so _check_text_answer let it pass.
+Fix (agent.py): "preference(s)" now requires a tool call; a preferences-only question is
+  satisfied by get_student_preferences alone (no chain_lost repair).
+After the fix (assistant pod log):
+  [failure] text_instead_of_tool: answered without any tool: 'Your saved preferences include: ...Milpitas...'
+  [repair] re-prompting once with the specific problem
+  [tool] get_student_preferences {}
+  answer: San Jose, Internship, $25/hour, Onsite, Computer Science, 2027 — "Your recent mention of
+  moving to Milpitas isn't reflected here — would you like to update your preferred city?"
+  tokens 2,976 + 607, 29.2% of context.
+
+==============================================================================
+2026-11-13  MySQL -> MongoDB migration of the real Lab 1 database
+==============================================================================
+$ docker start p4-mysql
+$ backend/.venv/bin/python database/migrate_mysql_to_mongo.py --target p4_handshake_migrated
+users 254->254 | company_profiles 50->50 | student_profiles 204->204 | skills 30->30
+student_skills 834 / job_skills 842 -> embedded | jobs 320->320 | applications 1501->1501
+events 110->110 | event_registrations 600->600 | student_preferences 140->140 | resumes copied to GridFS: 2
+(full table: docs/evidence/migration.txt)
+
+==============================================================================
+2026-11-13  Memory consolidation via Kafka (Part 3) — docs/evidence/memory_consolidation.txt
+==============================================================================
+# Run 1 (kind cluster): model returned 61 entries -> rule-based fallback -> 26 entries, BUT the
+# rule pass merged "$30/hr" and "$35/hr" as duplicates and kept $30 (wrong). Fixed: slot-aware
+# dedupe + re-verification of the stored list. The kind cluster also restarted pods under model
+# load (mongosh readiness probe timeout -> MongoDB DNS removed); probes fixed, cluster deleted to
+# free the laptop, remaining runs on Docker Compose.
+$ curl -X POST localhost:9040/api/assistant/chat -d '{"message":"/memory consolidate"}'   (demo student)
+Consolidation of your 64 memory entries was queued. ...   trace 379c5f3d9b9948e59c145f69bcae0c23
+memory-worker: method=model+rule_correction, 264 s
+before=64  model_output=61  after=24  final_problems=[]
+model: kept all 5 contradictions and every duplicate group; claimed merges it did not make
+rules: merged 6 duplicates, resolved work_mode/preferred_city/graduation/finance_interest/minimum_pay
+       to the newest value, merged 10 skills into one entry, summarized 20 old activity entries
+$ backend/.venv/bin/python backend/scripts/consolidation_prompt_experiment.py   # merge-plan prompt
+151 s; invented groups ("Knows Python" for unrelated ids); graduation resolved to the OLDER May 2027.
+
+==============================================================================
+2026-11-13  Guardrail harness (Part 6) — docs/evaluation/agent_harness.{json,md}
+==============================================================================
+$ cd backend && KAFKA_ENABLED=false .venv/bin/python -m harness.agent_harness
+PASS H01..H13 (16 cases): read-only search, accepted/declined save, malformed args repaired,
+unknown tool, no match, follow-up with history, injection before (canary leaked, defense off) /
+after (fenced, blocked), iteration ceiling (6), 1 s timeout, tool error retried once, second tool
+error stops, privacy redaction, cross-student argument rejected, route authorization (401/403/404).
+16/16 passed; reliability repair off 2/4 -> on 4/4
+# Added for guardrail 7: MAX_TOOL_RETRIES=1 (a second tool error in one run stops it).
+
+==============================================================================
+2026-11-13  Compaction and recall (Part 6) — docs/evidence/compaction.json
+==============================================================================
+$ backend/.venv/bin/python backend/scripts/compaction_demo.py   (noprefs.student, real qwen3:8b)
+> Find data science internships.               final 81.7 s, 2,019 prompt tokens (20.1%)
+> Any career fairs or workshops next month?    final 131.9 s, 2,860 prompt tokens (28.9%)
+> /compact                                     about 2151 -> 1114 tokens (10 -> 2 messages), 51.5 s
+> Save the first job you showed me.            confirmation_required for item_id=244
+first job shown: [244] -> after compaction the assistant targeted item_id=244  correct=True (declined)
+# The first attempt used the demo student: injected memory made qwen3 add filters (city Milpitas,
+# min_salary 35, company "fintech") the student never asked for and search repeatedly. The memory
+# block now says not to turn memory into search filters; qwen3 still sometimes does (kept as a finding).
+
+==============================================================================
+2026-11-13  Failed trace
+==============================================================================
+$ backend/.venv/bin/python backend/scripts/trace_analysis.py --requests 0 --fail-one
+# temporary copy of the assistant container with OLLAMA_HOST=http://host.docker.internal:1
+failed-trace request: 200 model_error 5a02e53efbe34ecb90e65a0217e92033
+stages: model.inference FAILED (12.8 ms), kafka.publish, kafka.queue_wait, worker.process (memory worker)
+
+==============================================================================
+2026-11-13  JMeter (Part 5) — loadtest/results/summary.{md,json}, graphs
+==============================================================================
+$ ./loadtest/run_loadtest.sh crud        # 2 s ramp; login 5, search 20 requests per user; apply 1 each
+$ caffeinate -i ./loadtest/rerun.sh event_search:200 login:300 login:400 job_search:400 application:400 \
+      event_search:400 login:500 job_search:500
+# The laptop suspended during several runs (sample gaps of 700-1,060 s, no request in flight;
+# max single request 11 s). analyze_results.py measures throughput over active time (gaps > 30 s removed).
+CRUD: 0 errors at every level. Login avg 1.1 s @100 -> 5.3 s @500, throughput plateau ~40-70 req/s
+(bcrypt CPU; student service ~860% CPU). Search < 1 s avg up to 500 users. Applications 45-375 ms
+(202 via Kafka); after the runs p4-application-worker lag 0 on all partitions, dead_letters empty.
+$ caffeinate -dis ./loadtest/run_loadtest.sh assistant      # 5, 10, 20, 50 users, 1 chat each
+JMeter reported 0% errors, but the API returns 200 with status model_error/timeout. From the traces:
+  5 users: final 5 | 10: final 1, model_error 2, timeout 3, untraced 4 | 20: model_error 16, timeout 4
+  50: model_error 48, timeout 2.  p50 295-367 s. Ollama serves one generation at a time.
+# Fix: JSON assertion on $.status added to the plan; analyze_results.py reports the trace-based rate.
+
+==============================================================================
+2026-11-13  Tracing (Part 6) — docs/evidence/traces.json, trace_latency.png
+==============================================================================
+$ backend/.venv/bin/python backend/scripts/trace_analysis.py --requests 50 --fail-one
+# First attempt: request 21 spanned a 2.8 h laptop suspend, the 60-min session expired, requests
+# 22-50 got 401 (session expiry working). Script now signs in per request; 20 good + 30 new used.
+50 final + 1 failed trace: model_inference 99.9% of latency (median 54.8 s), database 14 ms,
+tool overhead 4 ms, Kafka publish + queue wait + worker 45 ms. Ollama hung once (no answer to a
+plain chat); restarted only its llama-server runner.
+
+# ===================== Lab 2 Part 1.4-1.6: AWS ECR + EKS (2026-11-16) =====================
+# AWS account: pair account, IAM user p4-lab2 (AdministratorAccess), region us-west-2.
+aws configure                                    # access key typed by the user, region us-west-2
+aws sts get-caller-identity                      # -> arn:aws:iam::<account>:user/p4-lab2
+brew install eksctl
+aws service-quotas get-service-quota --service-code ec2 --quota-code L-1216C47A --region us-west-2
+# -> 5.0 vCPUs. Original plan (2 x t3.large + m6i.2xlarge = 12 vCPU) does not fit; increase to 16
+#    requested (case opened). k8s/eks-cluster.yaml changed to one m7i.xlarge node group p4-nodes.
+eksctl create cluster -f k8s/eks-cluster.yaml --dry-run
+eksctl create cluster -f k8s/eks-cluster.yaml   # ~17 min; cluster ACTIVE, 1 node Ready
+./scripts/aws_push_ecr.sh                        # 7 repos p4-*, linux/amd64 images, tag 2.0 pushed
+ECR_REGISTRY=<account>.dkr.ecr.us-west-2.amazonaws.com ./scripts/aws_deploy_eks.sh
+# FAILED: timed out waiting for job/p4-kafka-topics. PVCs data-p4-mongo-0 / data-p4-kafka-0 Pending:
+#   EKS 1.30+ has no default StorageClass. Fix: k8s/overlays/aws/storageclass.yaml (gp3, default).
+kubectl apply -f k8s/overlays/aws/storageclass.yaml   # PVCs Bound
+# Kafka then crashed: "Error while writing meta.properties file /var/lib/kafka/data" (EBS volume
+#   owned by root, image runs as uid 1000). Fix in k8s/base/11-kafka.yaml: fsGroup 1000 and
+#   KAFKA_LOG_DIRS=/var/lib/kafka/data/logs (volume root holds lost+found).
+kubectl -n p4-handshake delete pod p4-kafka-0       # Ready; topics job pod restarted -> Completed
+kubectl -n p4-handshake rollout restart deploy -l tier=worker
+ECR_REGISTRY=... ./scripts/aws_deploy_eks.sh     # re-run: topics done, seed OK (250 users, 320 jobs, 1500 applications)
+kubectl -n p4-handshake get pods                 # 22 pods Running + topics job Completed
+# Test through the load balancer:
+curl -s -o /dev/null -w "%{http_code}" http://<elb>:9040/                       # 200
+curl -X POST http://<elb>:9040/api/auth/login -d '{"email":"noprefs.student@example.edu",...}'  # token
+curl "http://<elb>:9040/api/jobs?keyword=data" -H "Authorization: Bearer ..."    # 200 in 0.11 s
+curl -X POST http://<elb>:9040/api/assistant/chat ...                            # connection cut at 60.0 s
+# Cause: classic ELB idle timeout 60 s. Fix: Service annotation
+#   service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "600" (aws overlay).
+# Assistant then hit the 300 s model timeout: qwen3:4b on 2 physical cores took ~3.5 min per call
+#   (Ollama NumThreads:2). Switched the aws overlay to qwen3:1.7b, OLLAMA_THINK=false, num_ctx 8192.
+kubectl -n p4-handshake exec deploy/p4-ollama -- ollama pull qwen3:1.7b
+# New Ollama pod stayed Pending (one node cannot hold old + new pod): strategy Recreate.
+curl -X POST http://<elb>:9040/api/assistant/chat -d '{"message":"Show part-time jobs in Santa Clara."}'
+# -> 200, status final, 190.4 s, 5 real Santa Clara part-time jobs.
+# HPA showed <unknown>: a manual metrics-server apply broke the EKS add-on's Service.
+kubectl -n kube-system delete svc metrics-server
+aws eks update-addon --cluster-name p4-handshake --addon-name metrics-server --resolve-conflicts OVERWRITE
+kubectl -n p4-handshake get hpa                  # cpu: 6%/70%
+# Kafka flow on EKS: POST /api/applications (job 186) -> 202 in 0.08 s, trace_id aws-demo-...;
+#   application-worker: p4.application.created partition 0 offset 0 processed, offset 1 committed;
+#   GET /api/applications/me shows application 1501; consumer group lag 0.
+# Evidence: docs/evidence/aws_eks.txt, aws_kafka.txt, aws_application_flow.txt, aws_seed.txt;
+#   screenshots docs/report/lab2/screenshots/aws_* (console pages captured after the user signed in).
+# The 1.7b model sometimes fails validation twice and the loop stops with "I couldn't complete that
+#   request reliably" (seen once; the retry answered in 229 s). Documented in the report.
+./scripts/aws_pause.sh pause                     # after evidence: node group to 0 (control plane, NAT, ELB still bill)
+./scripts/aws_pause.sh resume                    # before the demo

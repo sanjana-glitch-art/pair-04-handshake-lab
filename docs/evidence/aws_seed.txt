@@ -1,0 +1,15 @@
+$ backend/.venv/bin/python database/seed/generate_seed.py --reset    (EKS MongoDB through kubectl port-forward)
+Seeded MongoDB p4_handshake with SEED=4, CITY_SET=['San Jose', 'Santa Clara', 'Milpitas'], anchor=2026-11-16
+  users                    250
+  company_profiles          50
+  student_profiles         200
+  skills                    30
+  student_skills           834
+  jobs                     320
+  job_skills               842
+  applications            1500
+  events                   110
+  event_registrations      600
+  student_preferences      140
+  student_memory            64  (demo student, includes duplicates and contradictions)
+Every seeded account uses the password: Pair4Demo!

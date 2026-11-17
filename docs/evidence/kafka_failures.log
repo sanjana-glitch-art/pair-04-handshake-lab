@@ -1,0 +1,42 @@
+===== Case 1: same event published twice -> idempotent consumer =====
+[1a] publishing the SAME event twice: event_id=472acdb155474fe98770cc191fc93525 key=52:320 trace_id=demo-6b3eb0eca9e8
+[1b] publishing a retry with a NEW event_id=0db8e71352074afda14150af2682e9d6 for the same key=52:320
+[1] result: applications with _id=1506: 1; with student 52 + job 320: 1
+[1] processed_events has the event once: 1
+--- worker log lines:
+[pod/p4-application-worker-67f889d47f-pwzl4/application-worker] {"ts": "2026-11-13T09:17:53", "level": "INFO", "service": "application-worker", "trace_id": "demo-6b3eb0eca9e8", "msg": "event already processed; skipping", "topic": "p4.application.created", "event_id": "472acdb155474fe98770cc191fc93525"}
+[pod/p4-application-worker-67f889d47f-pwzl4/application-worker] {"ts": "2026-11-13T09:17:53", "level": "INFO", "service": "application-worker", "trace_id": "demo-6b3eb0eca9e8", "msg": "message handled", "topic": "p4.application.created", "partition": 2, "offset": 2, "outcome": "duplicate_skipped", "attempt": 1}
+[pod/p4-application-worker-67f889d47f-pwzl4/application-worker] {"ts": "2026-11-13T09:17:53", "level": "INFO", "service": "application-worker", "trace_id": "demo-6b3eb0eca9e8", "msg": "application already stored; not inserting a duplicate", "application_id": 1507}
+[pod/p4-application-worker-67f889d47f-pwzl4/application-worker] {"ts": "2026-11-13T09:17:53", "level": "INFO", "service": "application-worker", "trace_id": "demo-6b3eb0eca9e8", "msg": "message handled", "topic": "p4.application.created", "partition": 2, "offset": 3, "outcome": "duplicate_skipped", "attempt": 1}
+
+===== Case 2: worker killed during processing -> offset committed only after the write =====
+[2] published slow event_id=8e6f9c68ac94408889301123c4428b47 application_id=1508 student=51 job=320 trace_id=demo-d43a23f7f17d
+APPLICATION_ID=1508 STUDENT_ID=51 JOB_ID=320
+--- worker p4-application-worker-67f889d47f-gdjnn is paused before its database write; killing it now (force, no grace period)
+pod "p4-application-worker-67f889d47f-gdjnn" force deleted from p4-handshake namespace
+application 1508: NOT stored
+--- waiting for the message to be redelivered after the rebalance/restart ...
+--- stored 77s after the kill:
+[2] result: applications with _id=1508: 1; with student 51 + job 320: 1 | source_event_id 8e6f9c68ac94408889301123c4428b47
+--- worker log lines for application 1508:
+[pod/p4-application-worker-67f889d47f-pwzl4/application-worker] {"ts": "2026-11-13T09:17:53", "level": "INFO", "service": "application-worker", "trace_id": "demo-6b3eb0eca9e8", "msg": "message handled", "topic": "p4.application.created", "partition": 2, "offset": 2, "outcome": "duplicate_skipped", "attempt": 1}
+[pod/p4-application-worker-67f889d47f-pwzl4/application-worker] {"ts": "2026-11-13T09:17:53", "level": "INFO", "service": "application-worker", "trace_id": "demo-6b3eb0eca9e8", "msg": "message handled", "topic": "p4.application.created", "partition": 2, "offset": 3, "outcome": "duplicate_skipped", "attempt": 1}
+[pod/p4-application-worker-67f889d47f-ftxnp/application-worker] {"ts": "2026-11-13T09:18:47", "level": "INFO", "service": "application-worker", "trace_id": "demo-d43a23f7f17d", "msg": "demo pause before database write", "seconds": 25}
+[pod/p4-application-worker-67f889d47f-ftxnp/application-worker] {"ts": "2026-11-13T09:19:12", "level": "INFO", "service": "application-worker", "trace_id": "demo-d43a23f7f17d", "msg": "message handled", "topic": "p4.application.created", "partition": 1, "offset": 4, "outcome": "processed", "attempt": 1}
+NAME                                     READY   STATUS    RESTARTS   AGE
+p4-application-worker-67f889d47f-ftxnp   1/1     Running   0          79s
+p4-application-worker-67f889d47f-pwzl4   1/1     Running   0          2m4s
+
+===== Case 3: poison message -> bounded retries -> dead-letter topic, pipeline continues =====
+[3] publishing a poison message (invalid JSON) with key=poison:1: {"event_id": "poison-31e72528", "payload": {"student_id": "not-a-number"
+[3] published a valid message behind it: application_id=1509
+[3] dead_letters: {'topic': 'p4.application.created', 'partition': 0, 'offset': 2, 'attempts': 3, 'error': "JSONDecodeError: Expecting ',' delimiter: line 1 column 73 (char 72)"}
+[3] valid message after the poison one: applications with _id=1509: 1; with student 61 + job 320: 1
+--- worker log lines:
+[pod/p4-application-worker-67f889d47f-ftxnp/application-worker] {"ts": "2026-11-13T09:19:19", "level": "INFO", "service": "application-worker", "trace_id": "demo-poison", "msg": "message failed", "topic": "p4.application.created", "offset": 2, "attempt": 1, "max_attempts": 3, "error": "JSONDecodeError: Expecting ',' delimiter: line 1 column 73 (char 72)"}
+[pod/p4-application-worker-67f889d47f-ftxnp/application-worker] {"ts": "2026-11-13T09:19:19", "level": "INFO", "service": "application-worker", "trace_id": "demo-poison", "msg": "message failed", "topic": "p4.application.created", "offset": 2, "attempt": 2, "max_attempts": 3, "error": "JSONDecodeError: Expecting ',' delimiter: line 1 column 73 (char 72)"}
+[pod/p4-application-worker-67f889d47f-ftxnp/application-worker] {"ts": "2026-11-13T09:19:20", "level": "INFO", "service": "application-worker", "trace_id": "demo-poison", "msg": "message failed", "topic": "p4.application.created", "offset": 2, "attempt": 3, "max_attempts": 3, "error": "JSONDecodeError: Expecting ',' delimiter: line 1 column 73 (char 72)"}
+[pod/p4-application-worker-67f889d47f-ftxnp/application-worker] {"ts": "2026-11-13T09:19:20", "level": "INFO", "service": "application-worker", "trace_id": "demo-poison", "msg": "moved to dead-letter topic", "topic": "p4.application.created", "dlq": "p4.application.created.dlq", "offset": 2, "error": "JSONDecodeError: Expecting ',' delimiter: line 1 column 73 (char 72)"}
+--- p4.application.created.dlq contents:
+{"original_topic": "p4.application.created", "partition": 0, "offset": 0, "error": "JSONDecodeError: Expecting ',' delimiter: line 1 column 73 (char 72)", "attempts": 3, "raw": "{\"event_id\": \"poison-2f0fe69b\", \"payload\": {\"student_id\": \"not-a-number\""}
+{"original_topic": "p4.application.created", "partition": 0, "offset": 2, "error": "JSONDecodeError: Expecting ',' delimiter: line 1 column 73 (char 72)", "attempts": 3, "raw": "{\"event_id\": \"poison-31e72528\", \"payload\": {\"student_id\": \"not-a-number\""}
