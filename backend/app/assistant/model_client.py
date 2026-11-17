@@ -34,6 +34,10 @@ class ToolCall:
 class ModelReply:
     content: str
     tool_calls: list[ToolCall] = field(default_factory=list)
+    # Token counts reported by the runtime (Ollama: prompt_eval_count and
+    # eval_count). Scripted clients leave them None and the loop estimates.
+    prompt_tokens: int | None = None
+    completion_tokens: int | None = None
 
 
 class ModelError(Exception):
@@ -42,7 +46,34 @@ class ModelError(Exception):
     """
 
 
+def estimate_tokens(messages: list[dict] | str) -> int:
+    """
+    Rough count (about 4 characters per token) for clients that do not
+    report usage, and for "before/after" compaction estimates.
+    """
+
+    if isinstance(messages, str):
+        return max(1, len(messages) // 4)
+
+    total = 0
+    for message in messages:
+        total += 4 + len(str(message.get("content") or "")) // 4
+        for call in message.get("tool_calls") or []:
+            total += len(json.dumps(call)) // 4
+    return total
+
+
 class ModelClient(ABC):
+    context_window: int = int(os.getenv("OLLAMA_NUM_CTX", "12288"))
+
+    def complete_text(self, messages: list[dict], json_mode: bool = False) -> str:
+        """
+        Plain text completion without tools (used for summaries and
+        memory consolidation).
+        """
+
+        return self.complete(messages, []).content
+
     @abstractmethod
     def complete(
         self,
@@ -110,6 +141,7 @@ class OllamaModelClient(ModelClient):
         # qwen3 can reason before answering. It is slower but follows the
         # tool-argument rules much more closely (see METRICS.md).
         self.num_ctx = int(os.getenv("OLLAMA_NUM_CTX", "12288"))
+        self.context_window = self.num_ctx
         self.think = think if think is not None else os.getenv("OLLAMA_THINK", "true").lower() == "true"
         self._http = httpx.Client(timeout=timeout)
 
@@ -155,7 +187,8 @@ class OllamaModelClient(ModelClient):
                 )
             raise ModelError(f"Ollama returned HTTP {response.status_code}: {body}")
 
-        message = response.json().get("message", {})
+        data = response.json()
+        message = data.get("message", {})
         content = message.get("content") or ""
         calls = []
 
@@ -187,4 +220,36 @@ class OllamaModelClient(ModelClient):
             if calls:
                 content = TEXT_TOOL_CALL.sub("", content).strip()
 
-        return ModelReply(content=content, tool_calls=calls)
+        return ModelReply(
+            content=content,
+            tool_calls=calls,
+            prompt_tokens=data.get("prompt_eval_count"),
+            completion_tokens=data.get("eval_count"),
+        )
+
+    def complete_text(self, messages: list[dict], json_mode: bool = False) -> str:
+        """
+        One completion without tools and without reasoning, optionally
+        constrained to JSON output.
+        """
+
+        payload = {
+            "model": self.model,
+            "messages": messages,
+            "stream": False,
+            "think": False,
+            "keep_alive": "10m",
+            "options": {"temperature": 0.1, "seed": self.seed, "num_ctx": self.num_ctx},
+        }
+        if json_mode:
+            payload["format"] = "json"
+
+        try:
+            response = self._http.post(f"{self.host}/api/chat", json=payload)
+        except httpx.HTTPError as error:
+            raise ModelError(f"could not reach Ollama at {self.host}: {error}") from error
+
+        if response.status_code != 200:
+            raise ModelError(f"Ollama returned HTTP {response.status_code}: {response.text[:300]}")
+
+        return response.json().get("message", {}).get("content") or ""

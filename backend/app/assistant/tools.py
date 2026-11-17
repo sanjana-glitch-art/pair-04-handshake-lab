@@ -7,23 +7,16 @@ arguments, missing rows, and database errors all come back as text the
 model can read.
 """
 
+import os
 import re
+import time
 from dataclasses import dataclass
 from datetime import date
 
-from sqlalchemy import or_
-from sqlalchemy.orm import Session
+from pymongo.database import Database
 
 from ..eligibility import is_student_eligible
-from ..models import (
-    CompanyProfile,
-    Event,
-    Job,
-    SavedItem,
-    Skill,
-    StudentPreference,
-    StudentProfile,
-)
+from ..observability import record_stage
 
 
 CATEGORIES = ["full_time", "part_time", "on_campus", "internship"]
@@ -31,12 +24,17 @@ CATEGORIES = ["full_time", "part_time", "on_campus", "internship"]
 
 @dataclass
 class ToolContext:
-    db: Session
+    db: Database
     student_id: int
     # When True, text that came from the database (written by companies
     # or other users) is fenced off as untrusted data. See wrap_untrusted.
     defended: bool = True
     today: date | None = None
+    # The student's own bearer token and the request's trace id. The save
+    # tool forwards both to the Student service when STUDENT_SERVICE_URL
+    # is set (the deployed assistant); otherwise it writes in-process.
+    auth_token: str | None = None
+    trace_id: str | None = None
 
     @property
     def current_date(self) -> date:
@@ -369,14 +367,16 @@ def wrap_untrusted(ctx: ToolContext, source: str, body: str) -> str:
 
 # ---------------------------------------------------------------- formatting
 
-def format_pay(job: Job) -> str:
-    if job.salary_min is None and job.salary_max is None:
+def format_pay(job: dict) -> str:
+    low, high = job.get("salary_min"), job.get("salary_max")
+
+    if low is None and high is None:
         return "pay not listed"
 
-    low = job.salary_min or job.salary_max
-    high = job.salary_max or job.salary_min
+    low = low or high
+    high = high or low
 
-    if job.category == "full_time":
+    if job.get("category") == "full_time":
         return f"${low:,.0f}-${high:,.0f}/yr"
 
     return f"${low:,.0f}-${high:,.0f}/hr"
@@ -414,17 +414,41 @@ def title_terms(title: str) -> list[str]:
     return terms
 
 
+def contains(value: str) -> dict:
+    return {"$regex": re.escape(value), "$options": "i"}
+
+
+def skills_text(document: dict) -> str:
+    return ", ".join(sorted(document.get("skills") or [], key=str.lower)) or "none listed"
+
+
+class _DbTimer:
+    """
+    Adds database time to the trace (stage "db.<tool>").
+    """
+
+    def __init__(self, ctx: "ToolContext", name: str):
+        self.ctx, self.name = ctx, name
+
+    def __enter__(self):
+        self.started = time.perf_counter()
+
+    def __exit__(self, *exc):
+        record_stage(f"db.{self.name}", (time.perf_counter() - self.started) * 1000, self.ctx.trace_id)
+
+
 # --------------------------------------------------------------------- tools
 
 def get_student_preferences(ctx: ToolContext) -> str:
-    preference = ctx.db.get(StudentPreference, ctx.student_id)
-    profile = ctx.db.get(StudentProfile, ctx.student_id)
+    with _DbTimer(ctx, "get_student_preferences"):
+        preference = ctx.db.student_preferences.find_one({"_id": ctx.student_id})
+        profile = ctx.db.student_profiles.find_one({"_id": ctx.student_id}, {"city": 1, "major": 1, "graduation_year": 1})
 
     profile_line = ""
     if profile is not None:
         profile_line = (
-            f"\nProfile: city={profile.city or 'not set'}, major={profile.major or 'not set'}, "
-            f"graduation year={profile.graduation_year or 'not set'}."
+            f"\nProfile: city={profile.get('city') or 'not set'}, major={profile.get('major') or 'not set'}, "
+            f"graduation year={profile.get('graduation_year') or 'not set'}."
         )
 
     if preference is None:
@@ -435,12 +459,12 @@ def get_student_preferences(ctx: ToolContext) -> str:
         )
 
     values = {
-        "Preferred city": preference.preferred_city,
-        "Preferred job category": preference.preferred_category,
-        "Minimum pay": preference.minimum_salary,
-        "Work mode": preference.preferred_work_mode,
-        "Major (for jobs)": preference.preferred_major,
-        "Major (for events)": preference.preferred_event_major,
+        "Preferred city": preference.get("preferred_city"),
+        "Preferred job category": preference.get("preferred_category"),
+        "Minimum pay": preference.get("minimum_salary"),
+        "Work mode": preference.get("preferred_work_mode"),
+        "Major (for jobs)": preference.get("preferred_major"),
+        "Major (for events)": preference.get("preferred_event_major"),
     }
 
     lines = [f"- {label}: {value if value not in (None, '') else 'not set'}" for label, value in values.items()]
@@ -452,24 +476,17 @@ def search_jobs(ctx: ToolContext, **args) -> str:
     deadline_after = parse_date(args.get("deadline_after"), "deadline_after") or ctx.current_date
     limit = max(1, min(int(args.get("limit") or 5), 10))
 
-    query = (
-        ctx.db.query(Job, CompanyProfile.company_name)
-        .join(CompanyProfile, Job.company_id == CompanyProfile.user_id)
-        .filter(Job.deadline >= deadline_after)
-    )
+    conditions: list[dict] = [{"deadline": {"$gte": deadline_after.isoformat()}}]
 
     if args.get("title"):
-        terms = title_terms(args["title"])
-        if not terms:
-            terms = [args["title"].lower()]
-        for term in terms:
-            query = query.filter(Job.title.ilike(f"%{term}%"))
+        for term in title_terms(args["title"]) or [args["title"].lower()]:
+            conditions.append({"title": contains(term)})
 
     if args.get("company"):
-        query = query.filter(CompanyProfile.company_name.ilike(f"%{args['company']}%"))
+        conditions.append({"company_name": contains(args["company"])})
 
     if args.get("category"):
-        query = query.filter(Job.category == args["category"])
+        conditions.append({"category": args["category"]})
 
     notes = []
 
@@ -477,29 +494,29 @@ def search_jobs(ctx: ToolContext, **args) -> str:
     if args.get("city") and args.get("remote") is True:
         notes.append(f"Note: city '{args['city']}' was ignored because remote jobs can be done from anywhere.")
     elif args.get("city"):
-        query = query.filter(Job.location.ilike(f"%{args['city']}%"))
+        conditions.append({"location": contains(args["city"])})
 
     if args.get("remote") is not None:
-        query = query.filter(Job.is_remote == args["remote"])
+        conditions.append({"is_remote": args["remote"]})
 
     if args.get("min_salary") is not None:
-        query = query.filter(Job.salary_max >= float(args["min_salary"]))
+        conditions.append({"salary_max": {"$gte": float(args["min_salary"])}})
 
     if args.get("skills"):
         wanted = [skill.strip() for skill in args["skills"] if skill.strip()]
         if wanted:
-            query = query.filter(
-                Job.skills.any(or_(*[Skill.skill_name.ilike(skill) for skill in wanted]))
-            )
+            conditions.append({"skills": {"$in": [re.compile(f"^{re.escape(s)}$", re.I) for s in wanted]}})
 
-    total = query.count()
+    query = {"$and": conditions}
 
     if args.get("sort_by") == "salary_desc":
-        query = query.order_by(Job.salary_max.desc(), Job.deadline.asc())
+        order = [("salary_max", -1), ("deadline", 1)]
     else:
-        query = query.order_by(Job.deadline.asc(), Job.id.asc())
+        order = [("deadline", 1), ("_id", 1)]
 
-    rows = query.limit(limit).all()
+    with _DbTimer(ctx, "search_jobs"):
+        total = ctx.db.jobs.count_documents(query)
+        rows = list(ctx.db.jobs.find(query).sort(order).limit(limit))
 
     if not rows:
         used = ", ".join(f"{key}={value}" for key, value in args.items()) or "no filters"
@@ -508,59 +525,49 @@ def search_jobs(ctx: ToolContext, **args) -> str:
             "database; do not invent one. You may suggest loosening a filter."
         )
 
-    lines = []
-    for job, company_name in rows:
-        skills = ", ".join(skill.skill_name for skill in job.skills) or "none listed"
-        lines.append(
-            f"id={job.id} | {job.title} | {company_name} | "
-            f"{'Remote' if job.is_remote else job.location} | {job.category} | "
-            f"{format_pay(job)} | deadline {job.deadline} | skills: {skills}\n"
-            f"    summary: {one_line(job.description)}"
-        )
+    lines = [
+        f"id={job['_id']} | {job['title']} | {job['company_name']} | "
+        f"{'Remote' if job['is_remote'] else job['location']} | {job['category']} | "
+        f"{format_pay(job)} | deadline {job['deadline']} | skills: {skills_text(job)}\n"
+        f"    summary: {one_line(job['description'])}"
+        for job in rows
+    ]
 
     header = "\n".join(notes + [f"{total} open job(s) match; showing {len(rows)}."])
     return header + "\n" + wrap_untrusted(ctx, "search_jobs", "\n".join(lines))
 
 
 def get_job_details(ctx: ToolContext, job_id: int) -> str:
-    row = (
-        ctx.db.query(Job, CompanyProfile)
-        .join(CompanyProfile, Job.company_id == CompanyProfile.user_id)
-        .filter(Job.id == job_id)
-        .first()
-    )
+    with _DbTimer(ctx, "get_job_details"):
+        job = ctx.db.jobs.find_one({"_id": job_id})
+        company = ctx.db.company_profiles.find_one({"_id": job["company_id"]}) if job else None
+        recent = list(
+            ctx.db.jobs.find({"company_id": job["company_id"], "_id": {"$ne": job_id}})
+            .sort("posted_date", -1).limit(3)
+        ) if job else []
 
-    if row is None:
+    if job is None:
         return f"Error: no job with id {job_id} exists. Do not make up details for it."
 
-    job, company = row
-
-    recent = (
-        ctx.db.query(Job)
-        .filter(Job.company_id == company.user_id, Job.id != job.id)
-        .order_by(Job.posted_date.desc())
-        .limit(3)
-        .all()
-    )
+    company = company or {}
     recent_lines = "\n".join(
-        f"  - id={other.id} | {other.title} | posted {other.posted_date} | deadline {other.deadline}"
+        f"  - id={other['_id']} | {other['title']} | posted {other['posted_date']} | deadline {other['deadline']}"
         for other in recent
     ) or "  - none"
 
-    status = "open" if job.deadline >= ctx.current_date else "closed (deadline passed)"
-    skills = ", ".join(skill.skill_name for skill in job.skills) or "none listed"
+    status = "open" if job["deadline"] >= ctx.current_date.isoformat() else "closed (deadline passed)"
 
     body = (
-        f"Job id={job.id}: {job.title}\n"
-        f"Company: {company.company_name} ({company.location or 'location not listed'})\n"
-        f"Location: {'Remote' if job.is_remote else job.location}\n"
-        f"Category: {job.category}\n"
+        f"Job id={job['_id']}: {job['title']}\n"
+        f"Company: {company.get('company_name', job.get('company_name'))} ({company.get('location') or 'location not listed'})\n"
+        f"Location: {'Remote' if job['is_remote'] else job['location']}\n"
+        f"Category: {job['category']}\n"
         f"Pay: {format_pay(job)}\n"
-        f"Posted: {job.posted_date} | Deadline: {job.deadline} ({status})\n"
-        f"Skills: {skills}\n"
-        f"Description: {job.description}\n"
-        f"About the company: {company.description or 'not provided'}\n"
-        f"Contact: {company.contact_email or 'n/a'} | {company.contact_phone or 'n/a'}\n"
+        f"Posted: {job['posted_date']} | Deadline: {job['deadline']} ({status})\n"
+        f"Skills: {skills_text(job)}\n"
+        f"Description: {job['description']}\n"
+        f"About the company: {company.get('description') or 'not provided'}\n"
+        f"Contact: {company.get('contact_email') or 'n/a'} | {company.get('contact_phone') or 'n/a'}\n"
         f"Other recent postings by this company:\n{recent_lines}"
     )
 
@@ -573,47 +580,42 @@ def search_events(ctx: ToolContext, **args) -> str:
 
     # Only upcoming events, even if date_from is in the past.
     start = max(date_from or ctx.current_date, ctx.current_date)
-
-    query = (
-        ctx.db.query(Event, CompanyProfile.company_name)
-        .join(CompanyProfile, Event.company_id == CompanyProfile.user_id)
-        .filter(Event.event_date >= start)
-    )
+    base: dict = {"event_date": {"$gte": start.isoformat()}}
 
     if date_to:
         if date_to < start:
             raise ToolInputError("date_to is before date_from (or before today).")
-        query = query.filter(Event.event_date <= date_to)
+        base["event_date"]["$lte"] = date_to.isoformat()
 
-    base_query = query
-
-    def apply_text_filters(query, use_name=True, use_city=True):
+    def text_filters(use_name=True, use_city=True) -> dict:
+        conditions = [base]
         if use_name and args.get("name"):
             for term in title_terms(args["name"]) or [args["name"].lower()]:
-                query = query.filter(Event.event_name.ilike(f"%{term}%"))
+                conditions.append({"event_name": contains(term)})
         if use_city and args.get("city"):
-            query = query.filter(Event.location.ilike(f"%{args['city']}%"))
-        return query
+            conditions.append({"location": contains(args["city"])})
+        return {"$and": conditions}
 
-    profile = ctx.db.get(StudentProfile, ctx.student_id) if args.get("eligible_only") else None
+    profile = (
+        ctx.db.student_profiles.find_one({"_id": ctx.student_id}, {"major": 1, "graduation_year": 1})
+        if args.get("eligible_only") else None
+    )
 
     def eligible(rows):
         if args.get("major"):
-            rows = [
-                (event, company) for event, company in rows
-                if is_student_eligible(event.eligibility, args["major"], None)
-            ]
+            rows = [e for e in rows if is_student_eligible(e.get("eligibility"), args["major"], None)]
         if args.get("eligible_only"):
             rows = [
-                (event, company) for event, company in rows
-                if profile and is_student_eligible(event.eligibility, profile.major, profile.graduation_year)
+                e for e in rows
+                if profile and is_student_eligible(e.get("eligibility"), profile.get("major"), profile.get("graduation_year"))
             ]
         return rows
 
     def fetch(query):
-        return eligible(query.order_by(Event.event_date.asc(), Event.event_time.asc()).all())
+        with _DbTimer(ctx, "search_events"):
+            return eligible(list(ctx.db.events.find(query).sort([("event_date", 1), ("event_time", 1)])))
 
-    rows = fetch(apply_text_filters(base_query))
+    rows = fetch(text_filters())
 
     if not rows:
         used = ", ".join(f"{key}={value}" for key, value in args.items()) or "no filters"
@@ -623,9 +625,9 @@ def search_events(ctx: ToolContext, **args) -> str:
         # retry without a keyword the student never asked for.
         hints = []
         if args.get("name"):
-            hints.append(f"without name='{args['name']}': {len(fetch(apply_text_filters(base_query, use_name=False)))} match(es)")
+            hints.append(f"without name='{args['name']}': {len(fetch(text_filters(use_name=False)))} match(es)")
         if args.get("city"):
-            hints.append(f"without city='{args['city']}': {len(fetch(apply_text_filters(base_query, use_city=False)))} match(es)")
+            hints.append(f"without city='{args['city']}': {len(fetch(text_filters(use_city=False)))} match(es)")
         if hints:
             message += " For reference, " + "; ".join(hints) + ". Only drop a filter the student did not ask for."
 
@@ -633,40 +635,56 @@ def search_events(ctx: ToolContext, **args) -> str:
 
     shown = rows[:8]
     lines = [
-        f"id={event.id} | {event.event_name} | {event.event_date} {event.event_time.strftime('%H:%M')} | "
-        f"{event.location} | eligibility: {event.eligibility or 'open to all'} | host: {company}\n"
-        f"    summary: {one_line(event.description)}"
-        for event, company in shown
+        f"id={event['_id']} | {event['event_name']} | {event['event_date']} {event['event_time'][:5]} | "
+        f"{event['location']} | eligibility: {event.get('eligibility') or 'open to all'} | host: {event.get('company_name', '')}\n"
+        f"    summary: {one_line(event['description'])}"
+        for event in shown
     ]
 
     header = f"{len(rows)} upcoming event(s) match; showing {len(shown)}."
     return header + "\n" + wrap_untrusted(ctx, "search_events", "\n".join(lines))
 
 
-def save_job_or_event(ctx: ToolContext, item_type: str, item_id: int) -> str:
-    model = Job if item_type == "job" else Event
-    item = ctx.db.get(model, item_id)
+def _save_via_student_service(ctx: ToolContext, item_type: str, item_id: int) -> tuple[str, str]:
+    """
+    The deployed assistant asks the Student service to save, with the
+    student's own token, so the Student service's authorization applies.
+    """
 
-    if item is None:
+    import httpx
+
+    url = os.environ["STUDENT_SERVICE_URL"].rstrip("/") + "/saved"
+    headers = {"Authorization": f"Bearer {ctx.auth_token}"}
+    if ctx.trace_id:
+        headers["X-Trace-Id"] = ctx.trace_id
+        headers["X-Trace-Sample"] = "1"
+
+    response = httpx.post(url, json={"item_type": item_type, "item_id": item_id}, headers=headers, timeout=10)
+
+    if response.status_code == 404:
+        return "missing", ""
+    response.raise_for_status()
+    body = response.json()
+    return body["outcome"], body["title"]
+
+
+def save_job_or_event(ctx: ToolContext, item_type: str, item_id: int) -> str:
+    from ..saved_routes import save_item
+
+    started = time.perf_counter()
+
+    if os.getenv("STUDENT_SERVICE_URL") and ctx.auth_token:
+        outcome, label = _save_via_student_service(ctx, item_type, item_id)
+        record_stage("http.student_service.save", (time.perf_counter() - started) * 1000, ctx.trace_id)
+    else:
+        outcome, label = save_item(ctx.db, ctx.student_id, item_type, item_id)
+        record_stage("db.save_job_or_event", (time.perf_counter() - started) * 1000, ctx.trace_id)
+
+    if outcome == "missing":
         return f"Error: no {item_type} with id {item_id} exists, so nothing was saved."
 
-    label = item.title if item_type == "job" else item.event_name
-
-    existing = (
-        ctx.db.query(SavedItem)
-        .filter(
-            SavedItem.student_id == ctx.student_id,
-            SavedItem.item_type == item_type,
-            SavedItem.item_id == item_id,
-        )
-        .first()
-    )
-
-    if existing:
+    if outcome == "exists":
         return f"{item_type.title()} {item_id} ({label}) is already in the student's saved items."
-
-    ctx.db.add(SavedItem(student_id=ctx.student_id, item_type=item_type, item_id=item_id))
-    ctx.db.commit()
 
     return f"Saved {item_type} {item_id} ({label}) to the student's saved items."
 
@@ -679,6 +697,10 @@ TOOL_FUNCTIONS = {
     "save_job_or_event": save_job_or_event,
 }
 
+# Guardrail 4: read-only tools run automatically; every other tool is
+# state-changing and goes through confirm_action.
+READ_ONLY_TOOLS = {"get_student_preferences", "search_jobs", "get_job_details", "search_events"}
+
 
 def execute_tool(tool_name: str, arguments: dict | None, ctx: ToolContext) -> str:
     """
@@ -690,10 +712,12 @@ def execute_tool(tool_name: str, arguments: dict | None, ctx: ToolContext) -> st
     if error:
         return f"Error: {error}"
 
+    started = time.perf_counter()
     try:
         return TOOL_FUNCTIONS[tool_name](ctx, **cleaned)
     except ToolInputError as problem:
         return f"Error: {problem}"
     except Exception as problem:  # never let a tool crash the loop
-        ctx.db.rollback()
         return f"Error: {tool_name} failed unexpectedly ({type(problem).__name__}). Try different arguments."
+    finally:
+        record_stage(f"tool.{tool_name}", (time.perf_counter() - started) * 1000, ctx.trace_id)
